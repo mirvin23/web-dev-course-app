@@ -1,0 +1,242 @@
+.course-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+}
+
+.syllabus-sidebar {
+  width: 250px;
+  background-color: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.icon-btn:hover {
+  background-color: var(--bg-card-hover);
+}
+
+.syllabus-header {
+  padding: 2rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  z-index: 10;
+}
+
+.syllabus-header h3 {
+  margin-top: 1.5rem;
+  font-size: 1.25rem;
+  color: var(--accent-primary);
+}
+
+.syllabus-list {
+  padding: 1rem 0;
+}
+
+.syllabus-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border-left: 3px solid transparent;
+}
+
+.syllabus-item:hover:not(.locked) {
+  background-color: var(--bg-card-hover);
+}
+
+.syllabus-item.active {
+  background-color: rgba(139, 92, 246, 0.1);
+  border-left-color: var(--accent-primary);
+}
+
+.syllabus-item.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.syllabus-text p {
+  font-size: 0.875rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.theory-sidebar {
+  width: 350px;
+  background-color: var(--bg-card);
+  border-right: 1px solid var(--border-color);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+  transition: var(--transition);
+}
+
+.back-btn:hover {
+  color: var(--accent-primary);
+}
+
+.module-header {
+  margin-bottom: 2rem;
+}
+
+.module-number {
+  color: var(--accent-primary);
+  font-weight: 800;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.module-header h2 {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+}
+
+.module-desc {
+  color: var(--text-muted);
+}
+
+.theory-content {
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.theory-content h1 {
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--accent-primary);
+}
+
+.theory-content h2 {
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.theory-content ul {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.theory-content li {
+  margin-bottom: 0.5rem;
+}
+
+.theory-content pre {
+  background: #1e1e1e;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin: 1rem 0;
+  overflow-x: auto;
+}
+
+.theory-content code {
+  font-family: var(--font-mono);
+  background: rgba(139, 92, 246, 0.15);
+  color: #d946ef;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.theory-content pre code {
+  background: transparent;
+  color: #d4d4d4;
+  padding: 0;
+  font-size: 0.95rem;
+}
+
+.task-card {
+  margin-top: auto;
+  border-color: var(--accent-primary);
+  background: rgba(139, 92, 246, 0.05);
+}
+
+.task-card h3 {
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+}
+
+.completion-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  color: var(--accent-secondary);
+  font-weight: 600;
+}
+
+.next-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.next-btn.disabled {
+  background-color: var(--border-color);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.simulator-area {
+  flex: 1;
+  padding: 1rem;
+  background-color: var(--bg-dark);
+}
+
+@media (max-width: 900px) {
+  .course-layout {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .syllabus-sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 250px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .theory-sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .simulator-area {
+    min-height: 600px;
+  }
+}
