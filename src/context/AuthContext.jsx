@@ -29,9 +29,9 @@ export function AuthProvider({ children }) {
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
 
+      const isTeacher = user.email === 'ecortez@academiatarapaca.com' || user.email.startsWith('profesor');
+
       if (!userDoc.exists()) {
-        // If teacher email, assign teacher role. Else, student.
-        const isTeacher = user.email === 'erwin.cortez@academiatarapaca.com' || user.email.startsWith('profesor');
         await setDoc(userDocRef, {
           email: user.email,
           name: user.displayName,
@@ -40,7 +40,13 @@ export function AuthProvider({ children }) {
         });
         setUserRole(isTeacher ? 'teacher' : 'student');
       } else {
-        setUserRole(userDoc.data().role);
+        // Force upgrade to teacher if email matches but role was student
+        if (isTeacher && userDoc.data().role !== 'teacher') {
+          await setDoc(userDocRef, { role: 'teacher' }, { merge: true });
+          setUserRole('teacher');
+        } else {
+          setUserRole(userDoc.data().role);
+        }
       }
 
       return user;
@@ -59,8 +65,15 @@ export function AuthProvider({ children }) {
       if (user) {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
+        const isTeacher = user.email === 'ecortez@academiatarapaca.com' || user.email.startsWith('profesor');
+        
         if (userDoc.exists()) {
-          setUserRole(userDoc.data().role);
+          if (isTeacher && userDoc.data().role !== 'teacher') {
+            await setDoc(userDocRef, { role: 'teacher' }, { merge: true });
+            setUserRole('teacher');
+          } else {
+            setUserRole(userDoc.data().role);
+          }
         }
       } else {
         setUserRole(null);
