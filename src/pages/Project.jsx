@@ -117,6 +117,10 @@ export default function Project() {
                 </div>
               </div>
             </div>
+
+            <div className="syllabus-footer">
+              <p>Desarrollado con ❤️ por <strong>Erwin Cortez</strong></p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -70,6 +70,15 @@ export default function Home() {
             <p>Organiza la información como un profesional usando headers, artículos y secciones para un SEO perfecto.</p>
           </div>
         </motion.div>
+
+        <motion.footer 
+          className="home-footer"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+        >
+          <p>Desarrollado con ❤️ por <strong>Erwin Cortez</strong> para estudiantes de 1ero Medio.</p>
+        </motion.footer>
       </div>
     </div>
   );

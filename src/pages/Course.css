@@ -81,6 +81,29 @@
   max-width: 150px;
 }
 
+.syllabus-list {
+  flex: 1;
+}
+
+.syllabus-footer {
+  padding: 1rem;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-card);
+  position: sticky;
+  bottom: 0;
+}
+
+.syllabus-footer p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.syllabus-footer strong {
+  color: var(--accent-primary);
+}
+
 .theory-sidebar {
   width: 350px;
   background-color: var(--bg-card);
