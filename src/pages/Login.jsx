@@ -16,10 +16,17 @@ export default function Login() {
       await loginWithGoogle();
       navigate('/');
     } catch (err) {
-      if (err.message.includes('academiatarapaca.com')) {
+      console.error("Error detallado:", err);
+      if (err.message?.includes('academiatarapaca.com')) {
         setError('Error: Debes usar tu correo institucional (@academiatarapaca.com)');
+      } else if (err.message?.includes('Missing or insufficient permissions')) {
+        setError('Error de Base de Datos: Faltan permisos de Firestore. Revisa las reglas.');
+      } else if (err.message?.includes('auth/unauthorized-domain')) {
+        setError('Error de Dominio: Agrega este sitio en Firebase Auth > Dominios Autorizados.');
+      } else if (err.message?.includes('auth/popup-closed-by-user')) {
+        setError('Cancelaste el inicio de sesión.');
       } else {
-        setError('Ocurrió un error al iniciar sesión. Inténtalo de nuevo.');
+        setError(`Error: ${err.message || 'Inténtalo de nuevo.'}`);
       }
     }
   };
