@@ -45,7 +45,7 @@ export default function Login() {
       >
         <div className="login-header">
           <h2>Iniciar Sesión</h2>
-          <p>Ingresa con tu cuenta institucional de Academia Tarapacá para guardar tu progreso en el Quiz final.</p>
+          <p>Debes identificarte con tu cuenta institucional de la Academia Tarapacá para acceder al curso.</p>
         </div>
 
         {error && (

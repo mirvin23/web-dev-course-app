@@ -13,12 +13,34 @@ function App() {
     <AuthProvider>
       <div className="app-container">
         <Routes>
-          <Route path="/" element={<Home />} />
+          {/* Public Route */}
           <Route path="/login" element={<Login />} />
-          <Route path="/course/:moduleId" element={<Course />} />
-          <Route path="/project" element={<Project />} />
           
           {/* Protected Routes */}
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/course/:moduleId" 
+            element={
+              <ProtectedRoute>
+                <Course />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/project" 
+            element={
+              <ProtectedRoute>
+                <Project />
+              </ProtectedRoute>
+            } 
+          />
           <Route 
             path="/quiz" 
             element={
