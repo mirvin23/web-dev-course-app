@@ -1,13 +1,34 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Code2, Sparkles, Terminal, Rocket } from 'lucide-react';
+import { Code2, Sparkles, Terminal, Rocket, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Home.css';
 
 export default function Home() {
   const navigate = useNavigate();
+  const { currentUser, userRole, logout } = useAuth();
 
   return (
-    <div className="home-container flex-center">
+    <div className="home-container flex-center" style={{ position: 'relative' }}>
+      <div className="top-nav" style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', display: 'flex', gap: '1rem' }}>
+        {currentUser ? (
+          <>
+            {userRole === 'teacher' && (
+              <button className="btn-secondary" onClick={() => navigate('/dashboard')}>
+                <LayoutDashboard size={18} /> Dashboard
+              </button>
+            )}
+            <button className="btn-secondary" onClick={() => logout()}>
+              <LogOut size={18} /> Salir ({currentUser.displayName?.split(' ')[0]})
+            </button>
+          </>
+        ) : (
+          <button className="btn-secondary" onClick={() => navigate('/login')}>
+            <User size={18} /> Iniciar Sesión Institucional
+          </button>
+        )}
+      </div>
+
       <div className="container">
         <motion.div 
           className="hero-section"

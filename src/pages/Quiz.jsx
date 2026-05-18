@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import useStore from '../store/useStore';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../config/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import './Quiz.css';
 
 const questions = [
@@ -39,6 +42,7 @@ const questions = [
 ];
 
 export default function Quiz() {
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const setQuizScore = useStore(state => state.setQuizScore);
   
@@ -47,6 +51,7 @@ export default function Quiz() {
   const [isAnswered, setIsAnswered] = useState(false);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleOptionClick = (index) => {
     if (isAnswered) return;
@@ -59,13 +64,35 @@ export default function Quiz() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(curr => curr + 1);
       setSelectedOption(null);
       setIsAnswered(false);
     } else {
-      setQuizScore(score + (selectedOption === questions[currentQuestion].answer ? 1 : 0));
+      const finalScoreRaw = score + (selectedOption === questions[currentQuestion].answer ? 1 : 0);
+      const finalScorePercentage = Math.round((finalScoreRaw / questions.length) * 100);
+      
+      setQuizScore(finalScoreRaw);
+      setIsSaving(true);
+      
+      try {
+        if (currentUser) {
+          await addDoc(collection(db, 'quiz_results'), {
+            studentId: currentUser.uid,
+            studentName: currentUser.displayName,
+            studentEmail: currentUser.email,
+            score: finalScorePercentage,
+            rawScore: finalScoreRaw,
+            totalQuestions: questions.length,
+            timestamp: serverTimestamp()
+          });
+        }
+      } catch (error) {
+        console.error("Error saving score:", error);
+      }
+      
+      setIsSaving(false);
       setIsFinished(true);
     }
   };
