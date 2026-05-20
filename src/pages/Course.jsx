@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Unlock, PlayCircle, PanelLeftClose, PanelLeftOpen, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Unlock, PlayCircle, PanelLeftClose, PanelLeftOpen, Loader2, Trophy } from 'lucide-react';
 import Simulator from '../components/Simulator';
 import useStore, { validateCode } from '../store/useStore';
 import ReactMarkdown from 'react-markdown';
@@ -124,6 +124,20 @@ export default function Course() {
                       </div>
                     );
                   })}
+                  
+                  {/* Category Quiz Link */}
+                  <div 
+                    className="syllabus-item quiz-item"
+                    onClick={() => navigate(`/quiz/${category}`)}
+                    style={{ background: 'rgba(168, 85, 247, 0.05)', borderLeftColor: '#a855f7', marginTop: '0.5rem', marginBottom: '1rem' }}
+                  >
+                    <div className="syllabus-icon">
+                      <Trophy size={18} color="#a855f7" />
+                    </div>
+                    <div className="syllabus-text">
+                      <p style={{ fontWeight: 'bold', color: '#a855f7' }}>Quiz Final de {category}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

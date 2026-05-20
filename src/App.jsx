@@ -42,7 +42,7 @@ function App() {
             } 
           />
           <Route 
-            path="/quiz" 
+            path="/quiz/:category" 
             element={
               <ProtectedRoute>
                 <Quiz />
