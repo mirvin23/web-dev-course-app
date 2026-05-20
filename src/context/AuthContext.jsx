@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider, db } from '../config/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import useStore from '../store/useStore';
 
 const AuthContext = createContext();
 
@@ -32,21 +33,40 @@ export function AuthProvider({ children }) {
       const isTeacher = user.email === 'ecortez@academiatarapaca.com' || user.email.startsWith('profesor');
 
       if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
+        const initialProgress = {
           email: user.email,
           name: user.displayName,
           role: isTeacher ? 'teacher' : 'student',
-          createdAt: new Date()
-        });
+          createdAt: new Date(),
+          unlockedModules: [1],
+          completedChallenges: [],
+          quizScore: null
+        };
+        await setDoc(userDocRef, initialProgress);
         setUserRole(isTeacher ? 'teacher' : 'student');
+        
+        // Sync new progress to store
+        useStore.getState().setProgress({
+          unlockedModules: [1],
+          completedChallenges: [],
+          quizScore: null
+        });
       } else {
+        const userData = userDoc.data();
         // Force upgrade to teacher if email matches but role was student
-        if (isTeacher && userDoc.data().role !== 'teacher') {
+        if (isTeacher && userData.role !== 'teacher') {
           await setDoc(userDocRef, { role: 'teacher' }, { merge: true });
           setUserRole('teacher');
         } else {
-          setUserRole(userDoc.data().role);
+          setUserRole(userData.role);
         }
+
+        // Sync loaded progress to store
+        useStore.getState().setProgress({
+          unlockedModules: userData.unlockedModules || [1],
+          completedChallenges: userData.completedChallenges || [],
+          quizScore: userData.quizScore !== undefined ? userData.quizScore : null
+        });
       }
 
       return user;
@@ -55,8 +75,16 @@ export function AuthProvider({ children }) {
     }
   }
 
-  function logout() {
-    return signOut(auth);
+  async function logout() {
+    await signOut(auth);
+    // Clear local state on logout so next user doesn't see old progress
+    useStore.getState().setProgress({
+      unlockedModules: [1],
+      completedChallenges: [],
+      quizScore: null
+    });
+    // Also clear localStorage completely
+    localStorage.removeItem('web-dev-course-progress');
   }
 
   useEffect(() => {
@@ -68,12 +96,20 @@ export function AuthProvider({ children }) {
         const isTeacher = user.email === 'ecortez@academiatarapaca.com' || user.email.startsWith('profesor');
         
         if (userDoc.exists()) {
-          if (isTeacher && userDoc.data().role !== 'teacher') {
+          const userData = userDoc.data();
+          if (isTeacher && userData.role !== 'teacher') {
             await setDoc(userDocRef, { role: 'teacher' }, { merge: true });
             setUserRole('teacher');
           } else {
-            setUserRole(userDoc.data().role);
+            setUserRole(userData.role);
           }
+
+          // Sync progress from Firestore on session load
+          useStore.getState().setProgress({
+            unlockedModules: userData.unlockedModules || [1],
+            completedChallenges: userData.completedChallenges || [],
+            quizScore: userData.quizScore !== undefined ? userData.quizScore : null
+          });
         }
       } else {
         setUserRole(null);
