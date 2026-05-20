@@ -7,6 +7,8 @@ import ReactMarkdown from 'react-markdown';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
+import { module1Update, newModules } from '../data/newSyllabus';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import './Dashboard.css';
 
 // Helper to safely format Firestore timestamps, JS dates, or null
@@ -297,6 +299,31 @@ export default function Dashboard() {
     setIsModalOpen(false);
   };
 
+  const handleImportSyllabus = async () => {
+    if (window.confirm('¿Deseas importar la Malla Curricular extendida de 30 módulos y actualizar el Módulo 1 (Alta Fidelidad)?')) {
+      try {
+        setFormError('Importando módulos, por favor espera...');
+        // Update Module 1
+        await setDoc(doc(db, "modules", "1"), module1Update, { merge: true });
+        
+        // Add modules 16-30
+        const batch = writeBatch(db);
+        newModules.forEach((mod) => {
+          const ref = doc(db, "modules", mod.id.toString());
+          batch.set(ref, mod, { merge: true });
+        });
+        await batch.commit();
+        
+        setFormError('');
+        alert('¡Contenido importado y actualizado con éxito!');
+        // Refresh local state if necessary or let Firestore subscription handle it
+      } catch (e) {
+        console.error(e);
+        setFormError('Error importando contenido: ' + e.message);
+      }
+    }
+  };
+
   // Quiz Modal Logic
   const openAddQuizModal = () => {
     setEditingQuiz(null);
@@ -466,13 +493,23 @@ export default function Dashboard() {
           </button>
         )}
         {activeTab === 'modules' && (
-          <button 
-            className="btn-primary" 
-            onClick={openAddModal}
-            style={{ fontSize: '0.875rem' }}
-          >
-            <Plus size={18} /> Agregar Módulo
-          </button>
+          <div className="flex-center" style={{ gap: '1rem' }}>
+            <button 
+              className="btn-secondary" 
+              onClick={handleImportSyllabus}
+              style={{ fontSize: '0.875rem', borderColor: '#8b5cf6', color: '#8b5cf6' }}
+              title="Importar Malla Extendida (30 Módulos)"
+            >
+              <Download size={18} /> Inyectar Nuevos Módulos
+            </button>
+            <button 
+              className="btn-primary" 
+              onClick={openAddModal}
+              style={{ fontSize: '0.875rem' }}
+            >
+              <Plus size={18} /> Agregar Módulo
+            </button>
+          </div>
         )}
         {activeTab === 'quiz_creator' && (
           <button 
