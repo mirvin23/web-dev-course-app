@@ -1,6 +1,7 @@
 export const courseModules = [
   {
     id: 1,
+    category: "HTML",
     title: "1. La Estructura Base de la Web",
     description: "Conoce las etiquetas fundamentales que dan vida a cada sitio web.",
     theory: `
@@ -41,6 +42,7 @@ Toda página web necesita una estructura básica para que el navegador (como Chr
   },
   {
     id: 2,
+    category: "HTML",
     title: "2. Textos y Formatos",
     description: "Aprende a escribir y dar formato al texto como en un procesador de palabras.",
     theory: `
@@ -75,6 +77,7 @@ Para que el texto tenga sentido, no podemos simplemente escribirlo suelto. Debem
   },
   {
     id: 3,
+    category: "HTML",
     title: "3. Enlaces e Imágenes",
     description: "Conecta la web e inserta contenido multimedia.",
     theory: `
@@ -106,6 +109,7 @@ La etiqueta \`<img>\` no tiene etiqueta de cierre. Usa el atributo \`src\` (sour
   },
   {
     id: 4,
+    category: "HTML",
     title: "4. HTML5 Semántico: El Esqueleto",
     description: "Estructura la información como un profesional.",
     theory: `
@@ -137,6 +141,7 @@ Usar esto ayuda al posicionamiento en Google (SEO) y a las personas que usan lec
   },
   {
     id: 5,
+    category: "HTML",
     title: "5. Secciones y Artículos",
     description: "Organiza el contenido complejo dentro del Main.",
     theory: `
@@ -180,6 +185,7 @@ Dentro de nuestro \`<main>\` (contenido principal), a veces hay mucha informaci�
   },
   {
     id: 6,
+    category: "CSS",
     title: "6. Introducción a CSS",
     description: "La magia de los colores y estilos.",
     theory: `
@@ -210,6 +216,7 @@ selector {
   },
   {
     id: 7,
+    category: "CSS",
     title: "7. El Modelo de Caja",
     description: "Entiende cómo se calculan los tamaños en la web.",
     theory: `
@@ -244,6 +251,7 @@ En CSS, **absolutamente todo es una caja rectangular**. Incluso si haces un cír
   },
   {
     id: 8,
+    category: "CSS",
     title: "8. Tipografía",
     description: "Haz que tus textos luzcan profesionales.",
     theory: `
@@ -279,6 +287,7 @@ h1 {
   },
   {
     id: 9,
+    category: "CSS",
     title: "9. Flexbox Básico",
     description: "El poder de alinear elementos fácilmente.",
     theory: `
@@ -312,6 +321,7 @@ Le aplicas \`display: flex;\` a la caja padre (contenedor), y los elementos hijo
   },
   {
     id: 10,
+    category: "CSS",
     title: "10. Interactividad con :hover",
     description: "Dale vida a tus botones y enlaces.",
     theory: `
@@ -345,6 +355,7 @@ button:hover {
   },
   {
     id: 11,
+    category: "JavaScript",
     title: "11. Introducción a JavaScript",
     description: "El cerebro de tu página web.",
     theory: `
@@ -375,6 +386,7 @@ La función \`alert()\` hace que el navegador muestre un mensaje emergente en la
   },
   {
     id: 12,
+    category: "JavaScript",
     title: "12. Variables en JS",
     description: "Aprende a guardar información en la memoria.",
     theory: `
@@ -406,6 +418,7 @@ vidas = 2;
   },
   {
     id: 13,
+    category: "JavaScript",
     title: "13. El DOM (Document Object Model)",
     description: "Conecta JavaScript con tu HTML.",
     theory: `
@@ -435,6 +448,7 @@ const boton = document.querySelector('#boton-jugar');
   },
   {
     id: 14,
+    category: "JavaScript",
     title: "14. Eventos (Escuchando acciones)",
     description: "Haz que tu página reaccione a los clics del usuario.",
     theory: `
@@ -466,6 +480,7 @@ boton.addEventListener('click', () => {
   },
   {
     id: 15,
+    category: "JavaScript",
     title: "15. Modificando el DOM",
     description: "Cambia textos y estilos en tiempo real.",
     theory: `

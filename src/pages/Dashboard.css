@@ -179,6 +179,7 @@
 
 .crud-form input[type="text"],
 .crud-form input[type="number"],
+.crud-form select,
 .crud-form textarea {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -192,6 +193,7 @@
 
 .crud-form input[type="text"]:focus,
 .crud-form input[type="number"]:focus,
+.crud-form select:focus,
 .crud-form textarea:focus {
   outline: none;
   background: rgba(255, 255, 255, 0.05);

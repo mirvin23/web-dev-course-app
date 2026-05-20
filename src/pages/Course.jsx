@@ -26,6 +26,13 @@ export default function Course() {
     fetchModules();
   }, []);
 
+  const groupedModules = modules.reduce((acc, m) => {
+    const cat = m.category || 'General';
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(m);
+    return acc;
+  }, {});
+
   const module = modules.find(m => m.id === currentModuleId);
 
   if (loadingModules) {
@@ -89,31 +96,36 @@ export default function Course() {
               <h3>Temario</h3>
             </div>
             <div className="syllabus-list">
-              {modules.map((m) => {
-                const isUnlocked = unlockedModules.includes(m.id);
-                const isActive = m.id === currentModuleId;
-                const isDone = completedChallenges.includes(m.id);
-                
-                return (
-                  <div 
-                    key={m.id} 
-                    className={`syllabus-item ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`}
-                    onClick={() => {
-                      if (isUnlocked) navigate(`/course/${m.id}`);
-                    }}
-                  >
-                    <div className="syllabus-icon">
-                      {isDone ? <CheckCircle2 size={18} color="#10b981" /> 
-                        : isActive ? <PlayCircle size={18} color="#8b5cf6" />
-                        : isUnlocked ? <Unlock size={18} color="#a1a1aa" /> 
-                        : <Lock size={18} color="#52525b" />}
-                    </div>
-                    <div className="syllabus-text">
-                      <p>{m.title}</p>
-                    </div>
-                  </div>
-                );
-              })}
+              {Object.entries(groupedModules).map(([category, categoryModules]) => (
+                <div key={category} className="syllabus-category">
+                  <h4 className="category-title">{category}</h4>
+                  {categoryModules.map((m) => {
+                    const isUnlocked = unlockedModules.includes(m.id);
+                    const isActive = m.id === currentModuleId;
+                    const isDone = completedChallenges.includes(m.id);
+                    
+                    return (
+                      <div 
+                        key={m.id} 
+                        className={`syllabus-item ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`}
+                        onClick={() => {
+                          if (isUnlocked) navigate(`/course/${m.id}`);
+                        }}
+                      >
+                        <div className="syllabus-icon">
+                          {isDone ? <CheckCircle2 size={18} color="#10b981" /> 
+                            : isActive ? <PlayCircle size={18} color="#8b5cf6" />
+                            : isUnlocked ? <Unlock size={18} color="#a1a1aa" /> 
+                            : <Lock size={18} color="#52525b" />}
+                        </div>
+                        <div className="syllabus-text">
+                          <p>{m.title}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
             
             <div className="syllabus-footer">

@@ -35,14 +35,27 @@ export default function Dashboard() {
   const updateModule = useStore(state => state.updateModule);
   const deleteModule = useStore(state => state.deleteModule);
 
+  // Load quiz questions CRUD actions from Zustand store
+  const quizQuestions = useStore(state => state.quizQuestions);
+  const loadingQuizQuestions = useStore(state => state.loadingQuizQuestions);
+  const fetchQuizQuestions = useStore(state => state.fetchQuizQuestions);
+  const addQuizQuestion = useStore(state => state.addQuizQuestion);
+  const updateQuizQuestion = useStore(state => state.updateQuizQuestion);
+  const deleteQuizQuestion = useStore(state => state.deleteQuizQuestion);
+
   // Form & Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingModule, setEditingModule] = useState(null); // null if adding
   const [formError, setFormError] = useState('');
+
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+  const [editingQuiz, setEditingQuiz] = useState(null);
+  const [quizFormError, setQuizFormError] = useState('');
   
   // Module form fields
   const [formData, setFormData] = useState({
     id: 1,
+    category: 'HTML',
     title: '',
     description: '',
     theory: '',
@@ -53,6 +66,18 @@ export default function Dashboard() {
       successMessage: '',
       validationRules: [{ pattern: '', flags: 'si', negated: false }]
     }
+  });
+
+  const [quizFormData, setQuizFormData] = useState({
+    id: 1,
+    category: 'HTML',
+    type: 'multiple_choice',
+    question: '',
+    options: ['', '', '', ''],
+    correctIndex: 0,
+    isTrue: true,
+    correctOrder: ['', '', ''],
+    pairs: [{term: '', definition: ''}]
   });
 
   useEffect(() => {
@@ -78,6 +103,9 @@ export default function Dashboard() {
 
     // 3. Fetch modules list
     fetchModules();
+    
+    // 4. Fetch quiz questions list
+    fetchQuizQuestions();
 
     return () => {
       unsubscribeQuiz();
@@ -135,6 +163,7 @@ export default function Dashboard() {
     setFormError('');
     setFormData({
       id: modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1,
+      category: 'HTML',
       title: '',
       description: '',
       theory: '',
@@ -154,6 +183,7 @@ export default function Dashboard() {
     setFormError('');
     setFormData({
       id: mod.id,
+      category: mod.category || 'HTML',
       title: mod.title,
       description: mod.description,
       theory: mod.theory,
@@ -235,6 +265,7 @@ export default function Dashboard() {
     // Prepare cleaned data
     const cleanedModule = {
       id: Number(formData.id),
+      category: formData.category,
       title: formData.title,
       description: formData.description,
       theory: formData.theory,
@@ -259,6 +290,83 @@ export default function Dashboard() {
     }
 
     setIsModalOpen(false);
+  };
+
+  // Quiz Modal Logic
+  const openAddQuizModal = () => {
+    setEditingQuiz(null);
+    setQuizFormError('');
+    setQuizFormData({
+      id: quizQuestions.length > 0 ? Math.max(...quizQuestions.map(q => q.id)) + 1 : 1,
+      category: 'HTML',
+      type: 'multiple_choice',
+      question: '',
+      options: ['', '', '', ''],
+      correctIndex: 0,
+      isTrue: true,
+      correctOrder: ['', '', ''],
+      pairs: [{term: '', definition: ''}]
+    });
+    setIsQuizModalOpen(true);
+  };
+
+  const openEditQuizModal = (q) => {
+    setEditingQuiz(q);
+    setQuizFormError('');
+    setQuizFormData({
+      id: q.id,
+      category: q.category || 'HTML',
+      type: q.type || 'multiple_choice',
+      question: q.question || '',
+      options: q.options ? [...q.options] : ['', '', '', ''],
+      correctIndex: q.correctIndex || 0,
+      isTrue: q.isTrue !== undefined ? q.isTrue : true,
+      correctOrder: q.correctOrder ? [...q.correctOrder] : ['', '', ''],
+      pairs: q.pairs ? [...q.pairs] : [{term: '', definition: ''}]
+    });
+    setIsQuizModalOpen(true);
+  };
+
+  const handleDeleteQuiz = async (id) => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar esta pregunta?`)) {
+      await deleteQuizQuestion(id);
+    }
+  };
+
+  const handleQuizSubmit = async (e) => {
+    e.preventDefault();
+    setQuizFormError('');
+
+    if (!quizFormData.question.trim()) {
+      setQuizFormError('Por favor ingresa la pregunta.');
+      return;
+    }
+
+    const cleanedQuiz = {
+      id: Number(quizFormData.id),
+      category: quizFormData.category,
+      type: quizFormData.type,
+      question: quizFormData.question
+    };
+
+    if (quizFormData.type === 'multiple_choice') {
+      cleanedQuiz.options = quizFormData.options;
+      cleanedQuiz.correctIndex = Number(quizFormData.correctIndex);
+    } else if (quizFormData.type === 'true_false') {
+      cleanedQuiz.isTrue = quizFormData.isTrue;
+    } else if (quizFormData.type === 'ordering') {
+      cleanedQuiz.correctOrder = quizFormData.correctOrder;
+    } else if (quizFormData.type === 'drag_and_drop') {
+      cleanedQuiz.pairs = quizFormData.pairs;
+    }
+
+    if (editingQuiz) {
+      await updateQuizQuestion(cleanedQuiz.id, cleanedQuiz);
+    } else {
+      await addQuizQuestion(cleanedQuiz);
+    }
+    
+    setIsQuizModalOpen(false);
   };
 
   return (
@@ -324,6 +432,12 @@ export default function Dashboard() {
           >
             <BookOpen size={18} /> Contenidos del Curso ({modules.length})
           </button>
+          <button 
+            className={`tab-btn ${activeTab === 'quiz_creator' ? 'active' : ''}`}
+            onClick={() => setActiveTab('quiz_creator')}
+          >
+            <Edit3 size={18} /> Gestor de Quizzes ({quizQuestions.length})
+          </button>
         </div>
 
         {activeTab === 'progress' && (
@@ -353,6 +467,15 @@ export default function Dashboard() {
             style={{ fontSize: '0.875rem' }}
           >
             <Plus size={18} /> Agregar Módulo
+          </button>
+        )}
+        {activeTab === 'quiz_creator' && (
+          <button 
+            className="btn-primary" 
+            onClick={openAddQuizModal}
+            style={{ fontSize: '0.875rem' }}
+          >
+            <Plus size={18} /> Agregar Pregunta
           </button>
         )}
       </div>
@@ -496,6 +619,52 @@ export default function Dashboard() {
         </div>
       )}
 
+      {activeTab === 'quiz_creator' && (
+        <div className="glass-card table-container">
+          <table className="results-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Categoría</th>
+                <th>Tipo</th>
+                <th>Pregunta</th>
+                <th className="text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quizQuestions.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center" style={{ padding: '2rem' }}>
+                    Aún no hay preguntas creadas.
+                  </td>
+                </tr>
+              ) : (
+                quizQuestions.map(q => (
+                  <tr key={q.id}>
+                    <td style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>{q.id}</td>
+                    <td><span className="module-badge">{q.category}</span></td>
+                    <td className="text-muted">{q.type}</td>
+                    <td style={{ maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {q.question}
+                    </td>
+                    <td>
+                      <div className="flex-center" style={{ gap: '0.5rem', justifyContent: 'center' }}>
+                        <button className="btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openEditQuizModal(q)} title="Editar Pregunta">
+                          <Edit3 size={16} />
+                        </button>
+                        <button className="btn-secondary" style={{ padding: '0.4rem', borderColor: 'rgba(239,68,68,0.3)', color: '#f87171' }} onClick={() => handleDeleteQuiz(q.id)} title="Eliminar Pregunta">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {/* DYNAMIC FORM MODAL (ADD / EDIT) */}
       <AnimatePresence>
         {isModalOpen && (
@@ -534,15 +703,26 @@ export default function Dashboard() {
                     />
                   </div>
                   <div className="input-group">
-                    <label>Título del Módulo</label>
-                    <input 
-                      type="text" 
-                      placeholder="Ej: 1. La Estructura Base de la Web"
-                      value={formData.title} 
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      required
-                    />
+                    <label>Categoría</label>
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    >
+                      <option value="HTML">HTML</option>
+                      <option value="CSS">CSS</option>
+                      <option value="JavaScript">JavaScript</option>
+                    </select>
                   </div>
+                </div>
+                <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+                  <label>Título del Módulo</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ej: 1. La Estructura Base de la Web"
+                    value={formData.title} 
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                  />
                 </div>
 
                 <div className="input-group" style={{ marginBottom: '1.5rem' }}>
@@ -685,6 +865,177 @@ export default function Dashboard() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* QUIZ FORM MODAL */}
+      <AnimatePresence>
+        {isQuizModalOpen && (
+          <div className="modal-overlay flex-center">
+            <motion.div 
+              className="modal-content glass-card"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{ width: '90%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem' }}
+            >
+              <div className="flex-between" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                <h2>{editingQuiz ? 'Editar Pregunta' : 'Nueva Pregunta de Quiz'}</h2>
+                <button className="icon-btn" onClick={() => setIsQuizModalOpen(false)}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              {quizFormError && (
+                <div className="form-error-banner flex-center" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', color: '#f87171', padding: '0.75rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', gap: '0.5rem' }}>
+                  <HelpCircle size={18} />
+                  <span>{quizFormError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleQuizSubmit} className="crud-form">
+                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                  <div className="input-group">
+                    <label>ID</label>
+                    <input 
+                      type="number" 
+                      value={quizFormData.id} 
+                      onChange={(e) => setQuizFormData({ ...quizFormData, id: parseInt(e.target.value) })}
+                      required
+                      min="1"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Categoría</label>
+                    <select
+                      value={quizFormData.category}
+                      onChange={(e) => setQuizFormData({ ...quizFormData, category: e.target.value })}
+                    >
+                      <option value="HTML">HTML</option>
+                      <option value="CSS">CSS</option>
+                      <option value="JavaScript">JavaScript</option>
+                    </select>
+                  </div>
+                  <div className="input-group">
+                    <label>Tipo de Pregunta</label>
+                    <select
+                      value={quizFormData.type}
+                      onChange={(e) => setQuizFormData({ ...quizFormData, type: e.target.value })}
+                    >
+                      <option value="multiple_choice">Alternativas</option>
+                      <option value="true_false">Verdadero / Falso</option>
+                      <option value="ordering">Ordenar</option>
+                      <option value="drag_and_drop">Drag & Drop (Asociar)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+                  <label>Pregunta</label>
+                  <input 
+                    type="text" 
+                    placeholder="Escribe la pregunta aquí..."
+                    value={quizFormData.question} 
+                    onChange={(e) => setQuizFormData({ ...quizFormData, question: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
+                  <h3 style={{ marginBottom: '1.5rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Edit3 size={20} /> Configuración de Respuestas
+                  </h3>
+
+                  {quizFormData.type === 'multiple_choice' && (
+                    <div className="quiz-options-grid" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {quizFormData.options.map((opt, i) => (
+                        <div key={i} className="flex-center" style={{ gap: '1rem' }}>
+                          <input type="radio" name="correctOpt" checked={quizFormData.correctIndex === i} onChange={() => setQuizFormData({ ...quizFormData, correctIndex: i })} />
+                          <input type="text" style={{ flex: 1 }} value={opt} onChange={(e) => {
+                            const newOpts = [...quizFormData.options];
+                            newOpts[i] = e.target.value;
+                            setQuizFormData({ ...quizFormData, options: newOpts });
+                          }} placeholder={`Opción ${i+1}`} required />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {quizFormData.type === 'true_false' && (
+                    <div className="input-group">
+                      <label>Respuesta Correcta</label>
+                      <select value={quizFormData.isTrue ? "true" : "false"} onChange={(e) => setQuizFormData({ ...quizFormData, isTrue: e.target.value === "true" })}>
+                        <option value="true">Verdadero</option>
+                        <option value="false">Falso</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {quizFormData.type === 'ordering' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>Ingresa los elementos en el ORDEN CORRECTO (de arriba a abajo):</p>
+                      {quizFormData.correctOrder.map((step, i) => (
+                        <div key={i} className="flex-center" style={{ gap: '1rem' }}>
+                          <span style={{ color: 'var(--accent-primary)' }}>{i+1}.</span>
+                          <input type="text" style={{ flex: 1 }} value={step} onChange={(e) => {
+                            const newOrder = [...quizFormData.correctOrder];
+                            newOrder[i] = e.target.value;
+                            setQuizFormData({ ...quizFormData, correctOrder: newOrder });
+                          }} placeholder={`Paso ${i+1}`} required />
+                          <button type="button" className="icon-btn" style={{ color: '#f87171' }} onClick={() => {
+                            const newOrder = quizFormData.correctOrder.filter((_, idx) => idx !== i);
+                            setQuizFormData({ ...quizFormData, correctOrder: newOrder.length ? newOrder : [''] });
+                          }}><Trash2 size={16} /></button>
+                        </div>
+                      ))}
+                      <button type="button" className="btn-secondary" style={{ marginTop: '0.5rem', width: 'fit-content' }} onClick={() => setQuizFormData({ ...quizFormData, correctOrder: [...quizFormData.correctOrder, ''] })}>
+                        <PlusCircle size={16} /> Añadir Paso
+                      </button>
+                    </div>
+                  )}
+
+                  {quizFormData.type === 'drag_and_drop' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>Ingresa los pares correctos a asociar:</p>
+                      {quizFormData.pairs.map((pair, i) => (
+                        <div key={i} className="flex-center" style={{ gap: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <input type="text" value={pair.term} onChange={(e) => {
+                              const newPairs = [...quizFormData.pairs];
+                              newPairs[i].term = e.target.value;
+                              setQuizFormData({ ...quizFormData, pairs: newPairs });
+                            }} placeholder="Término (ej. <nav>)" required />
+                            <input type="text" value={pair.definition} onChange={(e) => {
+                              const newPairs = [...quizFormData.pairs];
+                              newPairs[i].definition = e.target.value;
+                              setQuizFormData({ ...quizFormData, pairs: newPairs });
+                            }} placeholder="Definición (ej. Navegación)" required />
+                          </div>
+                          <button type="button" className="icon-btn" style={{ color: '#f87171' }} onClick={() => {
+                            const newPairs = quizFormData.pairs.filter((_, idx) => idx !== i);
+                            setQuizFormData({ ...quizFormData, pairs: newPairs.length ? newPairs : [{term: '', definition: ''}] });
+                          }}><Trash2 size={16} /></button>
+                        </div>
+                      ))}
+                      <button type="button" className="btn-secondary" style={{ marginTop: '0.5rem', width: 'fit-content' }} onClick={() => setQuizFormData({ ...quizFormData, pairs: [...quizFormData.pairs, {term: '', definition: ''}] })}>
+                        <PlusCircle size={16} /> Añadir Par
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-end" style={{ marginTop: '2rem', gap: '1rem' }}>
+                  <button type="button" className="btn-secondary" onClick={() => setIsQuizModalOpen(false)}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    <Save size={18} /> {editingQuiz ? 'Actualizar Pregunta' : 'Guardar Pregunta'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

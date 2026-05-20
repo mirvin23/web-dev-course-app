@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { db, auth } from '../config/firebase';
 import { doc, setDoc, getDocs, collection, query, orderBy, writeBatch, deleteDoc, updateDoc } from 'firebase/firestore';
 import { courseModules as staticModules } from '../data/modules';
+import { defaultQuizQuestions } from '../data/quizQuestions';
 
 // Helper function to sync progress to Firestore
 const syncToFirestore = async (stateUpdate) => {
@@ -45,6 +46,10 @@ const useStore = create(
       // Course modules from Firestore
       modules: [],
       loadingModules: true,
+
+      // Quiz Questions from Firestore
+      quizQuestions: [],
+      loadingQuizQuestions: true,
       
       // Actions for progress
       setProgress: (progress) => set({
@@ -167,6 +172,74 @@ const useStore = create(
           await get().fetchModules();
         } catch (error) {
           console.error("Error deleting module:", error);
+        }
+      },
+
+      // CRUD actions for Quiz Questions
+      fetchQuizQuestions: async () => {
+        set({ loadingQuizQuestions: true });
+        try {
+          const q = query(collection(db, 'quiz_questions'), orderBy('id', 'asc'));
+          const snapshot = await getDocs(q);
+          
+          if (snapshot.empty) {
+            // Seed Firestore with initial 60 questions
+            console.log("Seeding Firestore with initial 60 questions...");
+            // Firestore batches have a limit of 500 operations, so 60 is fine.
+            const batch = writeBatch(db);
+            
+            defaultQuizQuestions.forEach((q) => {
+              const docRef = doc(db, 'quiz_questions', `q_${q.id}`);
+              batch.set(docRef, q);
+            });
+            
+            await batch.commit();
+            set({ quizQuestions: defaultQuizQuestions, loadingQuizQuestions: false });
+          } else {
+            const loadedQuestions = snapshot.docs.map(doc => ({
+              docId: doc.id,
+              ...doc.data()
+            }));
+            set({ quizQuestions: loadedQuestions, loadingQuizQuestions: false });
+          }
+        } catch (error) {
+          console.error("Error fetching quiz questions from Firestore:", error);
+          set({ quizQuestions: defaultQuizQuestions, loadingQuizQuestions: false });
+        }
+      },
+
+      addQuizQuestion: async (newQuestion) => {
+        try {
+          const docId = `q_${newQuestion.id}`;
+          const docRef = doc(db, 'quiz_questions', docId);
+          await setDoc(docRef, newQuestion);
+          
+          await get().fetchQuizQuestions();
+        } catch (error) {
+          console.error("Error adding question:", error);
+        }
+      },
+
+      updateQuizQuestion: async (questionId, updatedFields) => {
+        try {
+          const docId = `q_${questionId}`;
+          const docRef = doc(db, 'quiz_questions', docId);
+          await updateDoc(docRef, updatedFields);
+          
+          await get().fetchQuizQuestions();
+        } catch (error) {
+          console.error("Error updating question:", error);
+        }
+      },
+
+      deleteQuizQuestion: async (questionId) => {
+        try {
+          const docId = `q_${questionId}`;
+          await deleteDoc(doc(db, 'quiz_questions', docId));
+          
+          await get().fetchQuizQuestions();
+        } catch (error) {
+          console.error("Error deleting question:", error);
         }
       }
     }),
