@@ -96,10 +96,14 @@ export default function Course() {
               <h3>Temario</h3>
             </div>
             <div className="syllabus-list">
-              {Object.entries(groupedModules).map(([category, categoryModules]) => (
-                <div key={category} className="syllabus-category">
-                  <h4 className="category-title">{category}</h4>
-                  {categoryModules.map((m) => {
+              {Object.entries(groupedModules).map(([category, categoryModules]) => {
+                const lastModuleInCat = categoryModules[categoryModules.length - 1];
+                const isQuizUnlocked = completedChallenges.includes(lastModuleInCat.id);
+                
+                return (
+                  <div key={category} className="syllabus-category">
+                    <h4 className="category-title">{category}</h4>
+                    {categoryModules.map((m) => {
                     const isUnlocked = unlockedModules.includes(m.id);
                     const isActive = m.id === currentModuleId;
                     const isDone = completedChallenges.includes(m.id);
@@ -127,19 +131,21 @@ export default function Course() {
                   
                   {/* Category Quiz Link */}
                   <div 
-                    className="syllabus-item quiz-item"
-                    onClick={() => navigate(`/quiz/${category}`)}
+                    className={`syllabus-item quiz-item ${!isQuizUnlocked ? 'locked' : ''}`}
+                    onClick={() => {
+                      if (isQuizUnlocked) navigate(`/quiz/${category}`);
+                    }}
                     style={{ background: 'rgba(168, 85, 247, 0.05)', borderLeftColor: '#a855f7', marginTop: '0.5rem', marginBottom: '1rem' }}
                   >
                     <div className="syllabus-icon">
-                      <Trophy size={18} color="#a855f7" />
+                      {isQuizUnlocked ? <Trophy size={18} color="#a855f7" /> : <Lock size={18} color="#52525b" />}
                     </div>
                     <div className="syllabus-text">
-                      <p style={{ fontWeight: 'bold', color: '#a855f7' }}>Quiz Final de {category}</p>
+                      <p style={{ fontWeight: 'bold', color: isQuizUnlocked ? '#a855f7' : 'var(--text-muted)' }}>Quiz Final de {category}</p>
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
             
             <div className="syllabus-footer">
