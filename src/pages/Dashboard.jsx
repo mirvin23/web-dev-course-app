@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { db } from '../config/firebase';
 import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Trophy, LogOut, Download, Award, BarChart2, BookOpen, Plus, Edit3, Trash2, X, PlusCircle, Trash, Save, HelpCircle } from 'lucide-react';
+import { Users, Trophy, LogOut, Download, Award, BarChart2, BookOpen, Plus, Edit3, Trash2, X, PlusCircle, Trash, Save, HelpCircle, Eye } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
@@ -51,6 +52,10 @@ export default function Dashboard() {
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState(null);
   const [quizFormError, setQuizFormError] = useState('');
+  
+  // Preview Modals
+  const [previewModule, setPreviewModule] = useState(null);
+  const [previewQuiz, setPreviewQuiz] = useState(null);
   
   // Module form fields
   const [formData, setFormData] = useState({
@@ -603,6 +608,9 @@ export default function Dashboard() {
                     </td>
                     <td>
                       <div className="flex-center" style={{ gap: '0.5rem', justifyContent: 'center' }}>
+                        <button className="btn-secondary" style={{ padding: '0.4rem', color: '#3b82f6', borderColor: 'rgba(59,130,246,0.3)' }} onClick={() => setPreviewModule(m)} title="Vista Previa">
+                          <Eye size={16} />
+                        </button>
                         <button className="btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openEditModal(m)} title="Editar Módulo">
                           <Edit3 size={16} />
                         </button>
@@ -649,6 +657,9 @@ export default function Dashboard() {
                     </td>
                     <td>
                       <div className="flex-center" style={{ gap: '0.5rem', justifyContent: 'center' }}>
+                        <button className="btn-secondary" style={{ padding: '0.4rem', color: '#3b82f6', borderColor: 'rgba(59,130,246,0.3)' }} onClick={() => setPreviewQuiz(q)} title="Vista Previa">
+                          <Eye size={16} />
+                        </button>
                         <button className="btn-secondary" style={{ padding: '0.4rem' }} onClick={() => openEditQuizModal(q)} title="Editar Pregunta">
                           <Edit3 size={16} />
                         </button>
@@ -1031,6 +1042,124 @@ export default function Dashboard() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PREVIEW MODULE MODAL */}
+      <AnimatePresence>
+        {previewModule && (
+          <div className="modal-overlay flex-center">
+            <motion.div 
+              className="modal-content glass-card"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{ width: '90%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem' }}
+            >
+              <div className="flex-between" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <Eye size={24} color="#3b82f6" />
+                  <h2>Vista Previa: {previewModule.title}</h2>
+                </div>
+                <button className="icon-btn" onClick={() => setPreviewModule(null)}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '2rem' }}>
+                <span className="module-badge">{previewModule.category}</span>
+                <p className="text-muted" style={{ marginTop: '1rem' }}>{previewModule.description}</p>
+              </div>
+
+              <div className="theory-content" style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '2rem' }}>
+                <h3 style={{ color: 'var(--accent-primary)', marginBottom: '1rem' }}>Contenido Teórico</h3>
+                <ReactMarkdown>{previewModule.theory}</ReactMarkdown>
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: 'var(--radius-md)' }}>
+                <h3 style={{ color: '#10b981', marginBottom: '1rem' }}>Desafío: {previewModule.task.title}</h3>
+                <p style={{ marginBottom: '1rem' }}>{previewModule.task.instruction}</p>
+                <div style={{ background: '#1e1e1e', padding: '1rem', borderRadius: 'var(--radius-sm)', fontFamily: 'monospace', color: '#d4d4d4' }}>
+                  {previewModule.task.initialCode || '// Código inicial vacío'}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PREVIEW QUIZ MODAL */}
+      <AnimatePresence>
+        {previewQuiz && (
+          <div className="modal-overlay flex-center">
+            <motion.div 
+              className="modal-content glass-card"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{ width: '90%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem' }}
+            >
+              <div className="flex-between" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <Eye size={24} color="#3b82f6" />
+                  <h2>Vista Previa de Pregunta</h2>
+                </div>
+                <button className="icon-btn" onClick={() => setPreviewQuiz(null)}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
+                <span className="module-badge">{previewQuiz.category}</span>
+                <span style={{ background: 'var(--border-color)', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.8rem' }}>{previewQuiz.type}</span>
+              </div>
+
+              <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem', color: 'var(--text-main)' }}>{previewQuiz.question}</h2>
+
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.5rem', borderRadius: 'var(--radius-md)' }}>
+                {previewQuiz.type === 'multiple_choice' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {previewQuiz.options.map((opt, i) => (
+                      <div key={i} style={{ padding: '1rem', borderRadius: 'var(--radius-sm)', background: previewQuiz.correctIndex === i ? 'rgba(16,185,129,0.1)' : 'var(--bg-card-hover)', border: previewQuiz.correctIndex === i ? '1px solid #10b981' : '1px solid var(--border-color)' }}>
+                        {opt} {previewQuiz.correctIndex === i && <span style={{ float: 'right', color: '#10b981' }}>✓ Correcta</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {previewQuiz.type === 'true_false' && (
+                  <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ flex: 1, textAlign: 'center', padding: '1rem', borderRadius: 'var(--radius-sm)', background: previewQuiz.isTrue ? 'rgba(16,185,129,0.1)' : 'var(--bg-card-hover)', border: previewQuiz.isTrue ? '1px solid #10b981' : '1px solid var(--border-color)' }}>Verdadero</div>
+                    <div style={{ flex: 1, textAlign: 'center', padding: '1rem', borderRadius: 'var(--radius-sm)', background: !previewQuiz.isTrue ? 'rgba(16,185,129,0.1)' : 'var(--bg-card-hover)', border: !previewQuiz.isTrue ? '1px solid #10b981' : '1px solid var(--border-color)' }}>Falso</div>
+                  </div>
+                )}
+
+                {previewQuiz.type === 'ordering' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <p className="text-muted" style={{ marginBottom: '1rem' }}>Orden correcto esperado:</p>
+                    {previewQuiz.correctOrder.map((step, i) => (
+                      <div key={i} style={{ padding: '0.75rem', background: 'var(--bg-card-hover)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)' }}>
+                        <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold', marginRight: '1rem' }}>{i + 1}.</span> {step}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {previewQuiz.type === 'drag_and_drop' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <p className="text-muted" style={{ marginBottom: '1rem' }}>Pares correctos esperados:</p>
+                    {previewQuiz.pairs.map((pair, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '1rem', padding: '1rem', background: 'var(--bg-card-hover)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)' }}>
+                        <strong style={{ flex: 1, color: 'var(--accent-primary)' }}>{pair.term}</strong>
+                        <span style={{ color: 'var(--text-muted)' }}>&rarr;</span>
+                        <span style={{ flex: 1 }}>{pair.definition}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
         )}
