@@ -5,13 +5,12 @@ import { doc, setDoc, getDocs, collection, query, orderBy, writeBatch, deleteDoc
 import { courseModules as staticModules } from '../data/modules';
 
 // Helper function to sync progress to Firestore
-// Accepts an optional uid for cases where auth.currentUser isn't available yet (e.g. during login)
-const syncToFirestore = async (stateUpdate, uid) => {
-  const userId = uid || auth.currentUser?.uid;
-  if (!userId) return;
+const syncToFirestore = async (stateUpdate) => {
+  const user = auth.currentUser;
+  if (!user) return;
 
   try {
-    const userDocRef = doc(db, 'users', userId);
+    const userDocRef = doc(db, 'users', user.uid);
     await setDoc(userDocRef, stateUpdate, { merge: true });
   } catch (error) {
     console.error('Error syncing progress to Firestore:', error);
@@ -48,17 +47,11 @@ const useStore = create(
       loadingModules: true,
       
       // Actions for progress
-      // uid parameter is optional — used during login when auth.currentUser isn't ready
-      setProgress: (progress, uid) => {
-        const data = {
-          unlockedModules: progress.unlockedModules || [1],
-          completedChallenges: progress.completedChallenges || [],
-          quizScore: progress.quizScore !== undefined ? progress.quizScore : null,
-        };
-        set(data);
-        // Always sync back to Firestore to guarantee the cloud copy is up-to-date
-        syncToFirestore(data, uid);
-      },
+      setProgress: (progress) => set({
+        unlockedModules: progress.unlockedModules || [1],
+        completedChallenges: progress.completedChallenges || [],
+        quizScore: progress.quizScore !== undefined ? progress.quizScore : null,
+      }),
 
       unlockModule: (moduleId) => {
         const currentModules = get().unlockedModules;
@@ -90,6 +83,15 @@ const useStore = create(
           quizScore: null
         });
         syncToFirestore({
+          unlockedModules: [1],
+          completedChallenges: [],
+          quizScore: null
+        });
+      },
+
+      // Reset local state ONLY (used on logout to clear UI without erasing cloud data)
+      resetLocal: () => {
+        set({
           unlockedModules: [1],
           completedChallenges: [],
           quizScore: null

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider, db } from '../config/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import useStore from '../store/useStore';
 
 const AuthContext = createContext();
@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
           email: user.email,
           name: user.displayName,
           role: isTeacher ? 'teacher' : 'student',
-          createdAt: new Date(),
+          createdAt: serverTimestamp(),
           unlockedModules: [1],
           completedChallenges: [],
           quizScore: null
@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
           setUserRole(userData.role);
         }
 
-        // Sync loaded progress to store
+        // Sync loaded progress to store — Firestore is the single source of truth
         useStore.getState().setProgress({
           unlockedModules: userData.unlockedModules || [1],
           completedChallenges: userData.completedChallenges || [],
@@ -76,15 +76,12 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
-    await signOut(auth);
-    // Clear local state on logout so next user doesn't see old progress
-    useStore.getState().setProgress({
-      unlockedModules: [1],
-      completedChallenges: [],
-      quizScore: null
-    });
-    // Also clear localStorage completely
+    // 1. Clear Zustand in-memory state ONLY (do NOT sync to Firestore)
+    useStore.getState().resetLocal();
+    // 2. Wipe the persisted localStorage so no stale progress leaks to the next student
     localStorage.removeItem('web-dev-course-progress');
+    // 3. Sign out from Firebase Auth
+    await signOut(auth);
   }
 
   useEffect(() => {
@@ -104,11 +101,30 @@ export function AuthProvider({ children }) {
             setUserRole(userData.role);
           }
 
-          // Sync progress from Firestore on session load
+          // ALWAYS restore progress from Firestore on session resume
+          // This overwrites any stale data persist might have loaded from localStorage
           useStore.getState().setProgress({
             unlockedModules: userData.unlockedModules || [1],
             completedChallenges: userData.completedChallenges || [],
             quizScore: userData.quizScore !== undefined ? userData.quizScore : null
+          });
+        } else {
+          // Edge case: Auth user exists but no Firestore doc yet (e.g. first login via session cookie)
+          const initialProgress = {
+            email: user.email,
+            name: user.displayName,
+            role: isTeacher ? 'teacher' : 'student',
+            createdAt: serverTimestamp(),
+            unlockedModules: [1],
+            completedChallenges: [],
+            quizScore: null
+          };
+          await setDoc(userDocRef, initialProgress);
+          setUserRole(isTeacher ? 'teacher' : 'student');
+          useStore.getState().setProgress({
+            unlockedModules: [1],
+            completedChallenges: [],
+            quizScore: null
           });
         }
       } else {

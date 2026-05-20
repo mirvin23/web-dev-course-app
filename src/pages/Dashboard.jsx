@@ -8,6 +8,18 @@ import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
 import './Dashboard.css';
 
+// Helper to safely format Firestore timestamps, JS dates, or null
+const formatDate = (val, locale = false) => {
+  if (!val) return '-';
+  try {
+    // Firestore Timestamp objects have a .toDate() method
+    const date = typeof val.toDate === 'function' ? val.toDate() : new Date(val);
+    return locale ? date.toLocaleString() : date.toLocaleDateString();
+  } catch {
+    return '-';
+  }
+};
+
 export default function Dashboard() {
   const [results, setResults] = useState([]);
   const [students, setStudents] = useState([]);
@@ -103,7 +115,7 @@ export default function Dashboard() {
     const csvRows = students.map(s => {
       const maxModule = s.unlockedModules ? Math.max(...s.unlockedModules) : 1;
       const challengesCount = s.completedChallenges ? s.completedChallenges.length : 0;
-      const dateStr = s.createdAt ? new Date(s.createdAt.toDate()).toLocaleString() : 'N/A';
+      const dateStr = formatDate(s.createdAt, true) || 'N/A';
       return `"${s.name}","${s.email}",${maxModule},${challengesCount},"${dateStr}"`;
     });
     const csvContent = [headers.join(','), ...csvRows].join('\n');
@@ -384,7 +396,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="text-muted">
-                        {s.createdAt ? new Date(s.createdAt.toDate()).toLocaleDateString() : '-'}
+                        {formatDate(s.createdAt)}
                       </td>
                     </tr>
                   );
