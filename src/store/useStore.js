@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { db, auth } from '../config/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collection, query, orderBy, writeBatch, deleteDoc, updateDoc } from 'firebase/firestore';
+import { courseModules as staticModules } from '../data/modules';
 
-// Helper function to sync with Firestore in the background
+// Helper function to sync progress to Firestore
 const syncToFirestore = async (stateUpdate) => {
   const user = auth.currentUser;
   if (!user) return;
@@ -16,15 +17,36 @@ const syncToFirestore = async (stateUpdate) => {
   }
 };
 
+// Helper function to validate code against custom rules
+export const validateCode = (code, rules) => {
+  if (!rules || rules.length === 0) return true;
+  
+  return rules.every(rule => {
+    try {
+      // Clean pattern and parse flag
+      const regex = new RegExp(rule.pattern, rule.flags || 'i');
+      const isMatch = regex.test(code);
+      return rule.negated ? !isMatch : isMatch;
+    } catch (e) {
+      console.error("Error validando regex:", rule.pattern, e);
+      return false;
+    }
+  });
+};
+
 const useStore = create(
   persist(
     (set, get) => ({
       // Progress tracking
-      unlockedModules: [1], // IDs of unlocked modules. Start with 1 (HTML)
-      completedChallenges: [], // IDs of completed challenges
+      unlockedModules: [1],
+      completedChallenges: [],
       quizScore: null,
       
-      // Actions
+      // Course modules from Firestore
+      modules: [],
+      loadingModules: true,
+      
+      // Actions for progress
       setProgress: (progress) => set({
         unlockedModules: progress.unlockedModules || [1],
         completedChallenges: progress.completedChallenges || [],
@@ -65,10 +87,88 @@ const useStore = create(
           completedChallenges: [],
           quizScore: null
         });
+      },
+
+      // CRUD actions for Modules
+      fetchModules: async () => {
+        set({ loadingModules: true });
+        try {
+          const q = query(collection(db, 'modules'), orderBy('id', 'asc'));
+          const snapshot = await getDocs(q);
+          
+          if (snapshot.empty) {
+            // Seed Firestore with initial modules
+            console.log("Seeding Firestore with initial 15 modules...");
+            const batch = writeBatch(db);
+            
+            staticModules.forEach((m) => {
+              const docRef = doc(db, 'modules', `module_${m.id}`);
+              batch.set(docRef, m);
+            });
+            
+            await batch.commit();
+            set({ modules: staticModules, loadingModules: false });
+          } else {
+            const loadedModules = snapshot.docs.map(doc => ({
+              id: doc.data().id,
+              docId: doc.id,
+              ...doc.data()
+            }));
+            set({ modules: loadedModules, loadingModules: false });
+          }
+        } catch (error) {
+          console.error("Error fetching modules from Firestore:", error);
+          // Fallback to static modules in case of DB offline/error
+          set({ modules: staticModules, loadingModules: false });
+        }
+      },
+
+      addModule: async (newModule) => {
+        try {
+          const docId = `module_${newModule.id}`;
+          const docRef = doc(db, 'modules', docId);
+          await setDoc(docRef, newModule);
+          
+          // Re-fetch to keep local state perfectly sorted and synced
+          await get().fetchModules();
+        } catch (error) {
+          console.error("Error adding module:", error);
+        }
+      },
+
+      updateModule: async (moduleId, updatedFields) => {
+        try {
+          const docId = `module_${moduleId}`;
+          const docRef = doc(db, 'modules', docId);
+          await updateDoc(docRef, updatedFields);
+          
+          // Re-fetch to sync
+          await get().fetchModules();
+        } catch (error) {
+          console.error("Error updating module:", error);
+        }
+      },
+
+      deleteModule: async (moduleId) => {
+        try {
+          const docId = `module_${moduleId}`;
+          await deleteDoc(doc(db, 'modules', docId));
+          
+          // Re-fetch to sync
+          await get().fetchModules();
+        } catch (error) {
+          console.error("Error deleting module:", error);
+        }
       }
     }),
     {
       name: 'web-dev-course-progress', // local storage key
+      // ONLY persist progress keys, NEVER persist dynamic modules!
+      partialize: (state) => ({
+        unlockedModules: state.unlockedModules,
+        completedChallenges: state.completedChallenges,
+        quizScore: state.quizScore
+      })
     }
   )
 );

@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Unlock, PlayCircle, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Unlock, PlayCircle, PanelLeftClose, PanelLeftOpen, Loader2 } from 'lucide-react';
 import Simulator from '../components/Simulator';
-import { courseModules } from '../data/modules';
-import useStore from '../store/useStore';
+import useStore, { validateCode } from '../store/useStore';
 import ReactMarkdown from 'react-markdown';
 import './Course.css';
 
@@ -13,21 +12,44 @@ export default function Course() {
   const navigate = useNavigate();
   const [isSyllabusOpen, setIsSyllabusOpen] = useState(true);
   const currentModuleId = parseInt(moduleId);
-  const module = courseModules.find(m => m.id === currentModuleId);
+  
+  const modules = useStore(state => state.modules);
+  const loadingModules = useStore(state => state.loadingModules);
+  const fetchModules = useStore(state => state.fetchModules);
   
   const unlockModule = useStore(state => state.unlockModule);
   const completeChallenge = useStore(state => state.completeChallenge);
   const completedChallenges = useStore(state => state.completedChallenges);
   const unlockedModules = useStore(state => state.unlockedModules);
 
+  useEffect(() => {
+    fetchModules();
+  }, []);
+
+  const module = modules.find(m => m.id === currentModuleId);
+
+  if (loadingModules) {
+    return (
+      <div className="flex-center" style={{ height: '100vh', flexDirection: 'column', gap: '1rem', background: 'var(--bg-dark)' }}>
+        <Loader2 className="animate-spin" size={48} color="var(--accent-primary)" />
+        <p className="text-muted">Cargando temario interactivo...</p>
+      </div>
+    );
+  }
+
   if (!module) {
-    return <div>Módulo no encontrado</div>;
+    return (
+      <div className="flex-center" style={{ height: '100vh', flexDirection: 'column', gap: '1rem', background: 'var(--bg-dark)' }}>
+        <p className="text-muted">Módulo no encontrado</p>
+        <button className="btn-primary" onClick={() => navigate('/')}>Volver al Inicio</button>
+      </div>
+    );
   }
 
   const isCompleted = completedChallenges.includes(currentModuleId);
 
   const handleValidate = (code) => {
-    const isValid = module.task.validate(code);
+    const isValid = validateCode(code, module.task.validationRules);
     if (isValid && !isCompleted) {
       completeChallenge(currentModuleId);
       unlockModule(currentModuleId + 1);
@@ -36,10 +58,10 @@ export default function Course() {
   };
 
   const nextModule = () => {
-    if (currentModuleId < courseModules.length) {
+    if (currentModuleId < modules.length) {
       navigate(`/course/${currentModuleId + 1}`);
     } else {
-      navigate('/quiz'); // Go to Quiz before final project
+      navigate('/quiz');
     }
   };
 
@@ -67,7 +89,7 @@ export default function Course() {
               <h3>Temario</h3>
             </div>
             <div className="syllabus-list">
-              {courseModules.map((m) => {
+              {modules.map((m) => {
                 const isUnlocked = unlockedModules.includes(m.id);
                 const isActive = m.id === currentModuleId;
                 const isDone = completedChallenges.includes(m.id);
@@ -146,7 +168,7 @@ export default function Course() {
           onClick={nextModule}
           disabled={!isCompleted}
         >
-          {currentModuleId === courseModules.length ? 'Ir al Quiz' : 'Siguiente Módulo'} <ArrowRight size={20} />
+          {currentModuleId === modules.length ? 'Ir al Quiz' : 'Siguiente Módulo'} <ArrowRight size={20} />
         </button>
       </motion.div>
 

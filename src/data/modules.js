@@ -30,13 +30,12 @@ Toda página web necesita una estructura básica para que el navegador (como Chr
       title: "Desafío: Construye el ADN",
       instruction: "Arma la estructura básica de una página HTML5. Asegúrate de incluir el `DOCTYPE`, la etiqueta `<html>`, el `<head>` y el `<body>`.",
       initialCode: "<!-- Escribe tu código aquí -->\n\n\n",
-      validate: (code) => {
-        const hasDoctype = /<!DOCTYPE html>/i.test(code);
-        const hasHtml = /<html>.*<\/html>/si.test(code);
-        const hasHead = /<head>.*<\/head>/si.test(code);
-        const hasBody = /<body>.*<\/body>/si.test(code);
-        return hasDoctype && hasHtml && hasHead && hasBody;
-      },
+      validationRules: [
+        { pattern: "<!DOCTYPE html>", flags: "i", negated: false },
+        { pattern: "<html>.*<\\/html>", flags: "si", negated: false },
+        { pattern: "<head>.*<\\/head>", flags: "si", negated: false },
+        { pattern: "<body>.*<\\/body>", flags: "si", negated: false }
+      ],
       successMessage: "¡Perfecto! Has creado los cimientos de la web."
     }
   },
@@ -66,12 +65,11 @@ Para que el texto tenga sentido, no podemos simplemente escribirlo suelto. Debem
       title: "Desafío: El Escritor",
       instruction: "Crea un título principal `<h1>` sobre tu animal favorito, un párrafo `<p>` describiéndolo, y usa `<strong>` para resaltar su característica más importante dentro del párrafo.",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <!-- Escribe tu código aquí -->\n\n  </body>\n</html>",
-      validate: (code) => {
-        const hasH1 = /<h1>.*<\/h1>/si.test(code);
-        const hasP = /<p>.*<\/p>/si.test(code);
-        const hasStrong = /<strong>.*<\/strong>/si.test(code);
-        return hasH1 && hasP && hasStrong;
-      },
+      validationRules: [
+        { pattern: "<h1>.*<\\/h1>", flags: "si", negated: false },
+        { pattern: "<p>.*<\\/p>", flags: "si", negated: false },
+        { pattern: "<strong>.*<\\/strong>", flags: "si", negated: false }
+      ],
       successMessage: "¡Genial! Ahora el texto tiene jerarquía y significado."
     }
   },
@@ -99,11 +97,10 @@ La etiqueta \`<img>\` no tiene etiqueta de cierre. Usa el atributo \`src\` (sour
       title: "Desafío: Tu Primer Enlace",
       instruction: "Crea un enlace (`<a>`) que dirija a 'https://wikipedia.org' con el texto 'Ir a Wikipedia'. Opcional: ¡Añade una imagen usando `<img>`!",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <!-- Crea el enlace aquí -->\n\n  </body>\n</html>",
-      validate: (code) => {
-        const hasA = /<a /si.test(code);
-        const hasHref = /href=['"]https:\/\/wikipedia\.org['"]/si.test(code);
-        return hasA && hasHref;
-      },
+      validationRules: [
+        { pattern: "<a ", flags: "si", negated: false },
+        { pattern: "href=['\"]https:\\/\\/wikipedia\\.org['\"]", flags: "si", negated: false }
+      ],
       successMessage: "¡Excelente! Ahora tu página está conectada al mundo."
     }
   },
@@ -127,12 +124,14 @@ Usar esto ayuda al posicionamiento en Google (SEO) y a las personas que usan lec
       title: "Desafío: Mejorando un sitio viejo",
       instruction: "Cambia las etiquetas genéricas `<div>` por sus alternativas semánticas correspondientes (`<header>`, `<main>` y `<footer>`).",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <div class=\"encabezado\">\n      <h1>Mi Blog</h1>\n    </div>\n    \n    <div class=\"principal\">\n      <p>Bienvenidos a mi primer post.</p>\n    </div>\n    \n    <div class=\"pie\">\n      <p>Derechos reservados 2026</p>\n    </div>\n  </body>\n</html>",
-      validate: (code) => {
-        const hasHeader = /<header>/si.test(code) && !/<div class="encabezado">/si.test(code);
-        const hasMain = /<main>/si.test(code) && !/<div class="principal">/si.test(code);
-        const hasFooter = /<footer>/si.test(code) && !/<div class="pie">/si.test(code);
-        return hasHeader && hasMain && hasFooter;
-      },
+      validationRules: [
+        { pattern: "<header>", flags: "si", negated: false },
+        { pattern: "<div class=\"encabezado\">", flags: "si", negated: true },
+        { pattern: "<main>", flags: "si", negated: false },
+        { pattern: "<div class=\"principal\">", flags: "si", negated: true },
+        { pattern: "<footer>", flags: "si", negated: false },
+        { pattern: "<div class=\"pie\">", flags: "si", negated: true }
+      ],
       successMessage: "¡Increíble! Acabas de modernizar el código."
     }
   },
@@ -170,13 +169,12 @@ Dentro de nuestro \`<main>\` (contenido principal), a veces hay mucha informaci�
       title: "Desafío: Tu Primera Noticia",
       instruction: "Crea una `<section>` y dentro de ella coloca un `<article>`. El artículo debe tener un título (`<h2>`) y un párrafo (`<p>`).",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <main>\n      <!-- Escribe aquí tu section y article -->\n\n    </main>\n  </body>\n</html>",
-      validate: (code) => {
-        const hasSection = /<section>.*<\/section>/si.test(code);
-        const hasArticle = /<article>.*<\/article>/si.test(code);
-        const articleInsideSection = /<section>\s*<article>/si.test(code);
-        const hasH2 = /<h2>.*<\/h2>/si.test(code);
-        return hasSection && hasArticle && hasH2;
-      },
+      validationRules: [
+        { pattern: "<section>.*<\\/section>", flags: "si", negated: false },
+        { pattern: "<article>.*<\\/article>", flags: "si", negated: false },
+        { pattern: "<section>\\s*<article>", flags: "si", negated: false },
+        { pattern: "<h2>.*<\\/h2>", flags: "si", negated: false }
+      ],
       successMessage: "¡Eres un experto en Semántica! Google amará tu código."
     }
   },
@@ -203,11 +201,10 @@ selector {
       title: "Desafío: Pintando la Web",
       instruction: "En el bloque `<style>`, usa un selector de etiqueta para pintar todos los `<p>` de color rojo (`color: red;`), y usa un selector de clase para pintar el elemento con clase `.destacado` de color azul (`color: blue;`).",
       initialCode: "<!DOCTYPE html>\n<html>\n  <head>\n    <style>\n      /* Escribe tu CSS aquí */\n      \n    </style>\n  </head>\n  <body>\n    <p>Soy un párrafo normal.</p>\n    <p class=\"destacado\">Soy un párrafo destacado.</p>\n  </body>\n</html>",
-      validate: (code) => {
-        const hasPTag = /p\s*{\s*color:\s*red\s*;/si.test(code) || /p\s*{\s*[\s\S]*color:\s*red\s*;/si.test(code);
-        const hasClass = /\.destacado\s*{\s*color:\s*blue\s*;/si.test(code) || /\.destacado\s*{\s*[\s\S]*color:\s*blue\s*;/si.test(code);
-        return hasPTag && hasClass;
-      },
+      validationRules: [
+        { pattern: "p\\s*{[\\s\\S]*?color:\\s*red\\s*;", flags: "si", negated: false },
+        { pattern: "\\.destacado\\s*{[\\s\\S]*?color:\\s*blue\\s*;", flags: "si", negated: false }
+      ],
       successMessage: "¡Excelente! Has dominado los selectores."
     }
   },
@@ -237,12 +234,11 @@ En CSS, **absolutamente todo es una caja rectangular**. Incluso si haces un cír
       title: "Desafío: Cajas que respiran",
       instruction: "Dale estilo a `.mi-caja`: ponle un `padding` de 20px, un `margin` de 30px y un `border` de `5px solid red`.",
       initialCode: "<!DOCTYPE html>\n<html>\n  <head>\n    <style>\n      .mi-caja {\n        background-color: lightgray;\n        /* Escribe aquí padding, margin y border */\n        \n      }\n    </style>\n  </head>\n  <body>\n    <div class=\"mi-caja\">\n      ¡Necesito espacio!\n    </div>\n  </body>\n</html>",
-      validate: (code) => {
-        const hasPadding = /padding:\s*20px/si.test(code);
-        const hasMargin = /margin:\s*30px/si.test(code);
-        const hasBorder = /border:\s*5px solid red/si.test(code);
-        return hasPadding && hasMargin && hasBorder;
-      },
+      validationRules: [
+        { pattern: "padding:\\s*20px", flags: "si", negated: false },
+        { pattern: "margin:\\s*30px", flags: "si", negated: false },
+        { pattern: "border:\\s*5px solid red", flags: "si", negated: false }
+      ],
       successMessage: "¡Perfecto! Ahora entiendes cómo funciona el espacio en CSS."
     }
   },
@@ -273,12 +269,11 @@ h1 {
       title: "Desafío: El Diseñador Gráfico",
       instruction: "Modifica el `<h1>`: haz que use la familia `sans-serif`, tenga un tamaño de `30px` y esté centrado (`text-align: center`).",
       initialCode: "<!DOCTYPE html>\n<html>\n  <head>\n    <style>\n      h1 {\n        /* Escribe aquí las propiedades del texto */\n        \n      }\n    </style>\n  </head>\n  <body>\n    <h1>Texto Aburrido</h1>\n  </body>\n</html>",
-      validate: (code) => {
-        const hasFamily = /font-family:\s*sans-serif/si.test(code);
-        const hasSize = /font-size:\s*30px/si.test(code);
-        const hasAlign = /text-align:\s*center/si.test(code);
-        return hasFamily && hasSize && hasAlign;
-      },
+      validationRules: [
+        { pattern: "font-family:\\s*sans-serif", flags: "si", negated: false },
+        { pattern: "font-size:\\s*30px", flags: "si", negated: false },
+        { pattern: "text-align:\\s*center", flags: "si", negated: false }
+      ],
       successMessage: "¡Genial! El diseño de texto es clave para una buena página."
     }
   },
@@ -308,11 +303,10 @@ Le aplicas \`display: flex;\` a la caja padre (contenedor), y los elementos hijo
       title: "Desafío: Ordenando el Caos",
       instruction: "Convierte al `.contenedor` en un flexbox (`display: flex;`) y centra todo horizontalmente con `justify-content: center;`.",
       initialCode: "<!DOCTYPE html>\n<html>\n  <head>\n    <style>\n      .contenedor {\n        background-color: #f0f0f0;\n        height: 100px;\n        /* Escribe Flexbox aquí */\n        \n      }\n      .caja { background: purple; color: white; padding: 10px; margin: 5px; }\n    </style>\n  </head>\n  <body>\n    <div class=\"contenedor\">\n      <div class=\"caja\">Uno</div>\n      <div class=\"caja\">Dos</div>\n      <div class=\"caja\">Tres</div>\n    </div>\n  </body>\n</html>",
-      validate: (code) => {
-        const hasFlex = /display:\s*flex/si.test(code);
-        const hasCenter = /justify-content:\s*center/si.test(code);
-        return hasFlex && hasCenter;
-      },
+      validationRules: [
+        { pattern: "display:\\s*flex", flags: "si", negated: false },
+        { pattern: "justify-content:\\s*center", flags: "si", negated: false }
+      ],
       successMessage: "¡Eres un maestro de Flexbox! Esta es la herramienta más usada en CSS."
     }
   },
@@ -342,9 +336,10 @@ button:hover {
       title: "Desafío: El Botón Dinámico",
       instruction: "Añade la regla `.boton-magico:hover` para que el `background-color` cambie a `orange` cuando el mouse pase por encima.",
       initialCode: "<!DOCTYPE html>\n<html>\n  <head>\n    <style>\n      .boton-magico {\n        background-color: blue;\n        color: white;\n        padding: 10px 20px;\n        border: none;\n        border-radius: 5px;\n        cursor: pointer;\n      }\n      \n      /* Escribe la regla hover aquí abajo */\n      \n    </style>\n  </head>\n  <body>\n    <button class=\"boton-magico\">Pasa el mouse</button>\n  </body>\n</html>",
-      validate: (code) => {
-        return /\.boton-magico:hover\s*{/si.test(code) && /background-color:\s*orange/si.test(code);
-      },
+      validationRules: [
+        { pattern: "\\.boton-magico:hover\\s*{", flags: "si", negated: false },
+        { pattern: "background-color:\\s*orange", flags: "si", negated: false }
+      ],
       successMessage: "¡Felicidades! Has completado el curso de CSS."
     }
   },
@@ -372,9 +367,9 @@ La función \`alert()\` hace que el navegador muestre un mensaje emergente en la
       title: "Desafío: Hablando con el usuario",
       instruction: "En el bloque `<script>`, escribe un `alert()` que diga exactamente `'¡Despierta!'` (con comillas simples o dobles).",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <h1>Mi primera magia</h1>\n    \n    <script>\n      /* Escribe tu alert aquí */\n      \n    </script>\n  </body>\n</html>",
-      validate: (code) => {
-        return /alert\s*\(\s*['"]¡Despierta!['"]\s*\)/i.test(code);
-      },
+      validationRules: [
+        { pattern: "alert\\s*\\(\\s*['\"]¡Despierta!['\"]\\s*\\)", flags: "i", negated: false }
+      ],
       successMessage: "¡Excelente! Has ejecutado tu primera línea de código en JS."
     }
   },
@@ -402,11 +397,10 @@ vidas = 2;
       title: "Desafío: Guardando secretos",
       instruction: "Crea una variable llamada `nombreMagico` usando `const` y asígnale el valor `'Harry'`. Luego, crea una variable `puntos` usando `let` y asígnale el número `100`.",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <script>\n      // 1. Crea la const nombreMagico\n      \n      \n      // 2. Crea el let puntos\n      \n      \n    </script>\n  </body>\n</html>",
-      validate: (code) => {
-        const hasConst = /const\s+nombreMagico\s*=\s*['"]Harry['"]/si.test(code);
-        const hasLet = /let\s+puntos\s*=\s*100/si.test(code);
-        return hasConst && hasLet;
-      },
+      validationRules: [
+        { pattern: "const\\s+nombreMagico\\s*=\\s*['\"]Harry['\"]", flags: "si", negated: false },
+        { pattern: "let\\s+puntos\\s*=\\s*100", flags: "si", negated: false }
+      ],
       successMessage: "¡Muy bien! Ahora la página web tiene memoria."
     }
   },
@@ -433,9 +427,9 @@ const boton = document.querySelector('#boton-jugar');
       title: "Desafío: Atrapando el elemento",
       instruction: "Usa `document.querySelector` para seleccionar el párrafo con el id `#mensaje` y guárdalo en una constante llamada `parrafo`.",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <p id=\"mensaje\">Atrápame si puedes</p>\n    \n    <script>\n      // Escribe tu código aquí\n      \n    </script>\n  </body>\n</html>",
-      validate: (code) => {
-        return /const\s+parrafo\s*=\s*document\.querySelector\s*\(\s*['"]#mensaje['"]\s*\)/si.test(code);
-      },
+      validationRules: [
+        { pattern: "const\\s+parrafo\\s*=\\s*document\\.querySelector\\s*\\(\\s*['\"]#mensaje['\"]\\s*\\)", flags: "si", negated: false }
+      ],
       successMessage: "¡Perfecto! Ya tienes el control sobre el elemento."
     }
   },
@@ -462,12 +456,11 @@ boton.addEventListener('click', () => {
       title: "Desafío: El Botón Hablador",
       instruction: "Selecciona el botón con id `#saludar`. Luego añádele un `addEventListener` de tipo `'click'` que muestre un `alert('¡Hola!')`.",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <button id=\"saludar\">Haz clic para saludar</button>\n    \n    <script>\n      // 1. Selecciona el botón\n      \n      \n      // 2. Añade el Event Listener\n      \n    </script>\n  </body>\n</html>",
-      validate: (code) => {
-        const selectsButton = /document\.querySelector\s*\(\s*['"]#saludar['"]\s*\)/si.test(code);
-        const addsListener = /addEventListener\s*\(\s*['"]click['"]/si.test(code);
-        const hasAlert = /alert\s*\(\s*['"]¡Hola!['"]\s*\)/i.test(code);
-        return selectsButton && addsListener && hasAlert;
-      },
+      validationRules: [
+        { pattern: "document\\.querySelector\\s*\\(\\s*['\"]#saludar['\"]\\s*\\)", flags: "si", negated: false },
+        { pattern: "addEventListener\\s*\\(\\s*['\"]click['\"]", flags: "si", negated: false },
+        { pattern: "alert\\s*\\(\\s*['\"]¡Hola!['\"]\\s*\\)", flags: "i", negated: false }
+      ],
       successMessage: "¡Increíble! Ahora tu página es completamente interactiva."
     }
   },
@@ -497,13 +490,12 @@ titulo.addEventListener('click', () => {
       title: "Desafío: El Hacker",
       instruction: "Selecciona el `<h1>`. Añádele un evento `'click'`. Cuando se haga clic, cambia su `textContent` a `'Hackeado'` y su `style.color` a `'red'`.",
       initialCode: "<!DOCTYPE html>\n<html>\n  <body>\n    <h1>Soy seguro</h1>\n    \n    <script>\n      // Escribe tu código aquí\n      \n    </script>\n  </body>\n</html>",
-      validate: (code) => {
-        const selectsH1 = /document\.querySelector\s*\(\s*['"]h1['"]\s*\)/si.test(code);
-        const addsListener = /addEventListener\s*\(\s*['"]click['"]/si.test(code);
-        const changesText = /\.textContent\s*=\s*['"]Hackeado['"]/si.test(code);
-        const changesColor = /\.style\.color\s*=\s*['"]red['"]/si.test(code);
-        return selectsH1 && addsListener && changesText && changesColor;
-      },
+      validationRules: [
+        { pattern: "document\\.querySelector\\s*\\(\\s*['\"]h1['\"]\\s*\\)", flags: "si", negated: false },
+        { pattern: "addEventListener\\s*\\(\\s*['\"]click['\"]", flags: "si", negated: false },
+        { pattern: "\\.textContent\\s*=\\s*['\"]Hackeado['\"]", flags: "si", negated: false },
+        { pattern: "\\.style\\.color\\s*=\\s*['\"]red['\"]", flags: "si", negated: false }
+      ],
       successMessage: "¡Felicidades! Eres un verdadero maestro de JavaScript y del DOM."
     }
   }
