@@ -304,19 +304,32 @@ export default function Dashboard() {
       try {
         setFormError('Importando módulos, por favor espera...');
         // Update Module 1
-        await setDoc(doc(db, "modules", "1"), module1Update, { merge: true });
+        await setDoc(doc(db, "modules", "module_1"), module1Update, { merge: true });
         
         // Add modules 16-30
         const batch = writeBatch(db);
         newModules.forEach((mod) => {
-          const ref = doc(db, "modules", mod.id.toString());
+          const ref = doc(db, "modules", "module_" + mod.id);
           batch.set(ref, mod, { merge: true });
         });
         await batch.commit();
         
+        // Clean up the misnamed documents from previous attempt
+        try {
+          const refOld1 = doc(db, "modules", "1");
+          batch.delete(refOld1);
+          newModules.forEach((mod) => {
+            const refOld = doc(db, "modules", mod.id.toString());
+            batch.delete(refOld);
+          });
+          await batch.commit();
+        } catch(e) {} // ignore if they don't exist
+
         setFormError('');
         alert('¡Contenido importado y actualizado con éxito!');
-        // Refresh local state if necessary or let Firestore subscription handle it
+        
+        // Refresh local state 
+        fetchModules();
       } catch (e) {
         console.error(e);
         setFormError('Error importando contenido: ' + e.message);
