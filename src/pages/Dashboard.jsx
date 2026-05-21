@@ -304,22 +304,18 @@ export default function Dashboard() {
         setFormError('Importando y restaurando módulos, por favor espera...');
         const batch = writeBatch(db);
         
-        // 1. Restaurar los 15 originales desde src/data/modules.js
+        // 1. Restaurar los 15 originales desde src/data/modules.js (INTACTOS)
         const { courseModules } = await import('../data/modules.js');
         courseModules.forEach((mod) => {
           const ref = doc(db, "modules", "module_" + mod.id);
-          // Ojo: Si quieres actualizar la teoría del Módulo 1, lo cruzamos aquí:
-          if (mod.id === 1) {
-             batch.set(ref, { ...mod, ...module1Update, task: mod.task }, { merge: true });
-          } else {
-             batch.set(ref, mod, { merge: true });
-          }
+          batch.set(ref, mod, { merge: true });
         });
         
-        // 2. Inyectar los 30 nuevos del Markdown, desplazando sus IDs para que sean del 16 al 45
-        newModules.forEach((mod, index) => {
+        // 2. Inyectar los 30 STEAM Modules del Markdown (IDs 16 al 45)
+        const { steamModules } = await import('../data/newSyllabus.js');
+        steamModules.forEach((mod, index) => {
           const newId = 16 + index; // 16 to 45
-          const newMod = { ...mod, id: newId };
+          const newMod = { ...mod, id: newId, title: mod.title + " (Práctica STEAM)" };
           const ref = doc(db, "modules", "module_" + newId);
           batch.set(ref, newMod, { merge: true });
         });

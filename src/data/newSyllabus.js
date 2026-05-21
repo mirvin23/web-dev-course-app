@@ -1,7 +1,10 @@
-export const module1Update = {
-  title: "1. Estructura e Identidad Escolar",
-  description: "Aprende a estructurar la página oficial de tu alianza usando cabeceras, contenido principal y pie de página.",
-  theory: `¡Se acerca el aniversario de nuestro colegio y la competencia de las Alianzas está que arde! Cada año pasa lo mismo: los grupos de WhatsApp colapsan con mensajes perdidos, las fotos de los puntajes se borran y nadie sabe a qué hora es la competencia de skate o el torneo de videojuegos. El capitán de tu alianza te ha pedido ayuda urgente. Necesita centralizar la información en un sitio web propio para que todo el curso esté coordinado y motivado. Pero para que Google encuentre la página y los navegadores la muestren de forma ordenada a tus compañeros, no basta con tirar texto a la pantalla: necesitamos construir un esqueleto sólido, claro y profesional. En este módulo aprenderás a estructurar la página oficial de tu alianza usando las tres columnas vertebrales del desarrollo web moderno: la cabecera, el contenido principal y el pie de página. ¡Vamos a ganar este aniversario desde el código!
+export const steamModules = [
+  // HTML
+  {
+    category: "HTML",
+    title: "1. Estructura e Identidad Escolar",
+    description: "Aprende a estructurar la página oficial de tu alianza usando cabeceras, contenido principal y pie de página.",
+    theory: `¡Se acerca el aniversario de nuestro colegio y la competencia de las Alianzas está que arde! Cada año pasa lo mismo: los grupos de WhatsApp colapsan con mensajes perdidos, las fotos de los puntajes se borran y nadie sabe a qué hora es la competencia de skate o el torneo de videojuegos. El capitán de tu alianza te ha pedido ayuda urgente. Necesita centralizar la información en un sitio web propio para que todo el curso esté coordinado y motivado. Pero para que Google encuentre la página y los navegadores la muestren de forma ordenada a tus compañeros, no basta con tirar texto a la pantalla: necesitamos construir un esqueleto sólido, claro y profesional. En este módulo aprenderás a estructurar la página oficial de tu alianza usando las tres columnas vertebrales del desarrollo web moderno: la cabecera, el contenido principal y el pie de página. ¡Vamos a ganar este aniversario desde el código!
 
 ### Lectura Fundamental
 
@@ -35,20 +38,19 @@ Revisa con atención este ejemplo de estructura base bien comentada:
     <p>© 2026 Colegio Academia del Saber</p>
 </footer>
 \`\`\``,
-  task: {
-    title: "Desafío: Creador de Alianzas",
-    instruction: "Usando las etiquetas semánticas aprendidas, crea el esqueleto principal para tu Alianza. Necesitas un <header>, un <main> y un <footer>.",
-    initialCode: "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Crea aquí la estructura semántica de tu Alianza -->\n\n</body>\n</html>",
-    validationRules: [
-      { pattern: "<header>.*<\\/header>", flags: "si", negated: false },
-      { pattern: "<main>.*<\\/main>", flags: "si", negated: false },
-      { pattern: "<footer>.*<\\/footer>", flags: "si", negated: false }
-    ],
-    successMessage: "¡Excelente! Has creado una estructura semántica profesional para tu alianza."
-  }
-};
+    task: {
+      title: "Desafío: Creador de Alianzas",
+      instruction: "Usando las etiquetas semánticas aprendidas, crea el esqueleto principal para tu Alianza. Necesitas un <header>, un <main> y un <footer>.",
+      initialCode: "<!DOCTYPE html>\n<html>\n<body>\n  <!-- Crea aquí la estructura semántica de tu Alianza -->\n\n</body>\n</html>",
+      validationRules: [
+        { pattern: "<header>.*<\\/header>", flags: "si", negated: false },
+        { pattern: "<main>.*<\\/main>", flags: "si", negated: false },
+        { pattern: "<footer>.*<\\/footer>", flags: "si", negated: false }
+      ],
+      successMessage: "¡Excelente! Has creado una estructura semántica profesional para tu alianza."
+    }
+  },
 
-export const newModules = [
   // HTML
   {
     id: 2, category: "HTML", title: "2. Rutas de Navegación Interna",
