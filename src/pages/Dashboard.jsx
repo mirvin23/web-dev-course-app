@@ -299,31 +299,33 @@ export default function Dashboard() {
   };
 
   const handleImportSyllabus = async () => {
-    if (window.confirm('¿Deseas importar la Malla Curricular extendida de 30 módulos y actualizar el Módulo 1 (Alta Fidelidad)?')) {
+    if (window.confirm('¿Deseas restaurar tus 15 módulos originales y agregar los 30 nuevos del Markdown (Total 45 módulos)?')) {
       try {
-        setFormError('Importando módulos, por favor espera...');
-        // Update Module 1
-        await setDoc(doc(db, "modules", "module_1"), module1Update, { merge: true });
-        
-        // Add modules 16-30
+        setFormError('Importando y restaurando módulos, por favor espera...');
         const batch = writeBatch(db);
-        newModules.forEach((mod) => {
-          const ref = doc(db, "modules", "module_" + mod.id);
-          batch.set(ref, mod, { merge: true });
-        });
-        await batch.commit();
         
-        // Clean up the misnamed documents from previous attempt
-        try {
-          const batch2 = writeBatch(db);
-          const refOld1 = doc(db, "modules", "1");
-          batch2.delete(refOld1);
-          newModules.forEach((mod) => {
-            const refOld = doc(db, "modules", mod.id.toString());
-            batch2.delete(refOld);
-          });
-          await batch2.commit();
-        } catch(e) {} // ignore if they don't exist
+        // 1. Restaurar los 15 originales desde src/data/modules.js
+        const { courseModules } = await import('../data/modules.js');
+        courseModules.forEach((mod) => {
+          const ref = doc(db, "modules", "module_" + mod.id);
+          // Ojo: Si quieres actualizar la teoría del Módulo 1, lo cruzamos aquí:
+          if (mod.id === 1) {
+             batch.set(ref, { ...mod, ...module1Update, task: mod.task }, { merge: true });
+          } else {
+             batch.set(ref, mod, { merge: true });
+          }
+        });
+        
+        // 2. Inyectar los 30 nuevos del Markdown, desplazando sus IDs para que sean del 16 al 45
+        newModules.forEach((mod, index) => {
+          const newId = 16 + index; // 16 to 45
+          const newMod = { ...mod, id: newId };
+          const ref = doc(db, "modules", "module_" + newId);
+          batch.set(ref, newMod, { merge: true });
+        });
+        
+        
+        await batch.commit();
 
         setFormError('');
         
