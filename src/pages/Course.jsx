@@ -87,10 +87,18 @@ export default function Course() {
   };
 
   const nextModule = () => {
-    if (currentModuleId < modules.length) {
-      navigate(`/course/${currentModuleId + 1}`);
+    const currentCat = module?.category || 'HTML';
+    const currentSection = module?.section || 'Contenidos Básicos';
+    const nextMod = modules.find(m => m.id === currentModuleId + 1);
+
+    if (nextMod) {
+      if (nextMod.category === currentCat && nextMod.section === currentSection) {
+        navigate(`/course/${currentModuleId + 1}`);
+      } else {
+        navigate(`/quiz/${currentCat}`);
+      }
     } else {
-      navigate('/quiz');
+      navigate(`/quiz/${currentCat}`);
     }
   };
 

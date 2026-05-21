@@ -59,6 +59,12 @@
   border-color: #ef4444;
 }
 
+.quiz-option.selected {
+  background-color: rgba(139, 92, 246, 0.15);
+  border-color: var(--accent-primary);
+  color: #c4b5fd;
+}
+
 .status-icon {
   margin-left: 1rem;
 }
