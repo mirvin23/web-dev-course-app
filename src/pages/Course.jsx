@@ -31,9 +31,11 @@ export default function Course() {
   }, []);
 
   const groupedModules = modules.reduce((acc, m) => {
+    const section = m.section || 'Contenidos Básicos';
     const cat = m.category || 'General';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(m);
+    if (!acc[section]) acc[section] = {};
+    if (!acc[section][cat]) acc[section][cat] = [];
+    acc[section][cat].push(m);
     return acc;
   }, {});
 
@@ -116,56 +118,65 @@ export default function Course() {
               <h3>Temario</h3>
             </div>
             <div className="syllabus-list">
-              {Object.entries(groupedModules).map(([category, categoryModules]) => {
-                const lastModuleInCat = categoryModules[categoryModules.length - 1];
-                const isQuizUnlocked = completedChallenges.includes(lastModuleInCat.id);
-                
-                return (
-                  <div key={category} className="syllabus-category">
-                    <h4 className="category-title">{category}</h4>
-                    {categoryModules.map((m) => {
-                    const isUnlocked = unlockedModules.includes(m.id);
-                    const isActive = m.id === currentModuleId;
-                    const isDone = completedChallenges.includes(m.id);
+              {Object.entries(groupedModules).map(([section, categories]) => (
+                <div key={section} className="syllabus-section-group" style={{ marginBottom: '1.5rem' }}>
+                  <h3 className="section-title" style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.05)', color: section === 'Proyecto STEAM' ? '#c4b5fd' : '#6ee7b7', borderLeft: `4px solid ${section === 'Proyecto STEAM' ? '#8b5cf6' : '#10b981'}`, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    {section}
+                  </h3>
+                  
+                  {Object.entries(categories).map(([category, categoryModules]) => {
+                    const lastModuleInCat = categoryModules[categoryModules.length - 1];
+                    const isQuizUnlocked = completedChallenges.includes(lastModuleInCat.id);
                     
                     return (
-                      <div 
-                        key={m.id} 
-                        className={`syllabus-item ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`}
-                        onClick={() => {
-                          if (isUnlocked) navigate(`/course/${m.id}`);
-                        }}
-                      >
-                        <div className="syllabus-icon">
-                          {isDone ? <CheckCircle2 size={18} color="#10b981" /> 
-                            : isActive ? <PlayCircle size={18} color="#8b5cf6" />
-                            : isUnlocked ? <Unlock size={18} color="#a1a1aa" /> 
-                            : <Lock size={18} color="#52525b" />}
-                        </div>
-                        <div className="syllabus-text">
-                          <p>{m.title}</p>
+                      <div key={category} className="syllabus-category" style={{ paddingLeft: '0.5rem' }}>
+                        <h4 className="category-title" style={{ fontSize: '0.75rem', opacity: 0.8 }}>{category}</h4>
+                        {categoryModules.map((m) => {
+                          const isUnlocked = unlockedModules.includes(m.id);
+                          const isActive = m.id === currentModuleId;
+                          const isDone = completedChallenges.includes(m.id);
+                          
+                          return (
+                            <div 
+                              key={m.id} 
+                              className={`syllabus-item ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`}
+                              onClick={() => {
+                                if (isUnlocked) navigate(`/course/${m.id}`);
+                              }}
+                            >
+                              <div className="syllabus-icon">
+                                {isDone ? <CheckCircle2 size={18} color="#10b981" /> 
+                                  : isActive ? <PlayCircle size={18} color="#8b5cf6" />
+                                  : isUnlocked ? <Unlock size={18} color="#a1a1aa" /> 
+                                  : <Lock size={18} color="#52525b" />}
+                              </div>
+                              <div className="syllabus-text">
+                                <p>{m.title}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        
+                        {/* Category Quiz Link */}
+                        <div 
+                          className={`syllabus-item quiz-item ${!isQuizUnlocked ? 'locked' : ''}`}
+                          onClick={() => {
+                            if (isQuizUnlocked) navigate(`/quiz/${category}`);
+                          }}
+                          style={{ background: 'rgba(168, 85, 247, 0.05)', borderLeftColor: '#a855f7', marginTop: '0.5rem', marginBottom: '1rem' }}
+                        >
+                          <div className="syllabus-icon">
+                            {isQuizUnlocked ? <Trophy size={18} color="#a855f7" /> : <Lock size={18} color="#52525b" />}
+                          </div>
+                          <div className="syllabus-text">
+                            <p style={{ fontWeight: 'bold', color: isQuizUnlocked ? '#a855f7' : 'var(--text-muted)' }}>Quiz Final de {category}</p>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
-                  
-                  {/* Category Quiz Link */}
-                  <div 
-                    className={`syllabus-item quiz-item ${!isQuizUnlocked ? 'locked' : ''}`}
-                    onClick={() => {
-                      if (isQuizUnlocked) navigate(`/quiz/${category}`);
-                    }}
-                    style={{ background: 'rgba(168, 85, 247, 0.05)', borderLeftColor: '#a855f7', marginTop: '0.5rem', marginBottom: '1rem' }}
-                  >
-                    <div className="syllabus-icon">
-                      {isQuizUnlocked ? <Trophy size={18} color="#a855f7" /> : <Lock size={18} color="#52525b" />}
-                    </div>
-                    <div className="syllabus-text">
-                      <p style={{ fontWeight: 'bold', color: isQuizUnlocked ? '#a855f7' : 'var(--text-muted)' }}>Quiz Final de {category}</p>
-                    </div>
-                  </div>
                 </div>
-              )})}
+              ))}
             </div>
             
             <div className="syllabus-footer">

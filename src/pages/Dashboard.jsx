@@ -313,16 +313,16 @@ export default function Dashboard() {
           const ref = doc(db, "modules", "module_" + mod.id);
           // Ojo: Si quieres actualizar la teoría del Módulo 1, lo cruzamos aquí:
           if (mod.id === 1) {
-             batch.set(ref, { ...mod, ...module1Update, task: mod.task }, { merge: true });
+             batch.set(ref, { ...mod, ...module1Update, task: mod.task, section: 'Contenidos Básicos' }, { merge: true });
           } else {
-             batch.set(ref, mod, { merge: true });
+             batch.set(ref, { ...mod, section: 'Contenidos Básicos' }, { merge: true });
           }
         });
         
         // 2. Inyectar los 30 STEAM Modules del Markdown (IDs 16 al 45)
         steamModules.forEach((mod, index) => {
           const newId = 16 + index; // 16 to 45
-          const newMod = { ...mod, id: newId, title: mod.title + " (Práctica STEAM)" };
+          const newMod = { ...mod, id: newId, title: mod.title, section: 'Proyecto STEAM' };
           const ref = doc(db, "modules", "module_" + newId);
           batch.set(ref, newMod, { merge: true });
         });
@@ -341,6 +341,36 @@ export default function Dashboard() {
         alert('Ocurrió un error al importar: ' + e.message);
         setFormError('Error importando contenido: ' + e.message);
       }
+    }
+  };
+
+  const moveModule = async (index, direction) => {
+    if (direction === 'up' && index > 0) {
+      const current = modules[index];
+      const prev = modules[index - 1];
+      const tempId = current.id;
+      
+      setFormError('Reordenando...');
+      const batch = writeBatch(db);
+      batch.set(doc(db, "modules", "module_" + current.id), { id: prev.id }, { merge: true });
+      batch.set(doc(db, "modules", "module_" + prev.id), { id: tempId }, { merge: true });
+      await batch.commit();
+      
+      await fetchModules();
+      setFormError('');
+    } else if (direction === 'down' && index < modules.length - 1) {
+      const current = modules[index];
+      const next = modules[index + 1];
+      const tempId = current.id;
+      
+      setFormError('Reordenando...');
+      const batch = writeBatch(db);
+      batch.set(doc(db, "modules", "module_" + current.id), { id: next.id }, { merge: true });
+      batch.set(doc(db, "modules", "module_" + next.id), { id: tempId }, { merge: true });
+      await batch.commit();
+      
+      await fetchModules();
+      setFormError('');
     }
   };
 
@@ -637,25 +667,39 @@ export default function Dashboard() {
             <thead>
               <tr>
                 <th>Orden (ID)</th>
+                <th>Sección</th>
                 <th>Título del Módulo</th>
                 <th>Descripción</th>
-                <th>Reglas de Validación</th>
+                <th>Reglas</th>
                 <th className="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {modules.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center" style={{ padding: '2rem' }}>
+                  <td colSpan="6" className="text-center" style={{ padding: '2rem' }}>
                     Aún no hay módulos creados.
                   </td>
                 </tr>
               ) : (
-                modules.map(m => (
+                modules.map((m, index) => (
                   <tr key={m.id}>
-                    <td style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>{m.id}</td>
+                    <td style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                      <div className="flex-center" style={{ gap: '0.5rem', justifyContent: 'flex-start' }}>
+                        {m.id}
+                        <div className="flex-col" style={{ gap: '0.2rem', marginLeft: '0.5rem' }}>
+                          <button className="icon-btn-small" style={{ padding: '0 2px', fontSize: '0.8rem' }} onClick={() => moveModule(index, 'up')} disabled={index === 0} title="Mover Arriba">↑</button>
+                          <button className="icon-btn-small" style={{ padding: '0 2px', fontSize: '0.8rem' }} onClick={() => moveModule(index, 'down')} disabled={index === modules.length - 1} title="Mover Abajo">↓</button>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`badge ${m.section === 'Proyecto STEAM' ? 'badge-steam' : 'badge-basic'}`} style={{ backgroundColor: m.section === 'Proyecto STEAM' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(16, 185, 129, 0.2)', color: m.section === 'Proyecto STEAM' ? '#c4b5fd' : '#6ee7b7' }}>
+                        {m.section || 'Contenidos Básicos'}
+                      </span>
+                    </td>
                     <td><strong>{m.title}</strong></td>
-                    <td className="text-muted" style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <td className="text-muted" style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {m.description}
                     </td>
                     <td>
