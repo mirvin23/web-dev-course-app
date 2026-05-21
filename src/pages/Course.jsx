@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Unlock, PlayCircle, PanelLeftClose, PanelLeftOpen, Loader2, Trophy } from 'lucide-react';
@@ -21,6 +21,10 @@ export default function Course() {
   const completeChallenge = useStore(state => state.completeChallenge);
   const completedChallenges = useStore(state => state.completedChallenges);
   const unlockedModules = useStore(state => state.unlockedModules);
+  const savedCode = useStore(state => state.savedCode);
+  const saveCode = useStore(state => state.saveCode);
+  const debounceTimer = useRef(null);
+  const [saveStatus, setSaveStatus] = useState('');
 
   useEffect(() => {
     fetchModules();
@@ -56,12 +60,28 @@ export default function Course() {
   const isCompleted = completedChallenges.includes(currentModuleId);
 
   const handleValidate = (code) => {
+    // Immediate save on validate
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    saveCode(currentModuleId, code);
+    setSaveStatus('Guardado');
+    setTimeout(() => setSaveStatus(''), 2000);
+
     const isValid = validateCode(code, module.task.validationRules);
     if (isValid && !isCompleted) {
       completeChallenge(currentModuleId);
       unlockModule(currentModuleId + 1);
     }
     return isValid;
+  };
+
+  const handleCodeChange = (code) => {
+    setSaveStatus('Guardando...');
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      saveCode(currentModuleId, code);
+      setSaveStatus('Guardado en la nube');
+      setTimeout(() => setSaveStatus(''), 2000);
+    }, 1500); // Debounce to avoid hitting Firebase quota too often
   };
 
   const nextModule = () => {
@@ -180,7 +200,10 @@ export default function Course() {
         </div>
 
         <div className="task-card glass-card">
-          <h3>{module.task.title}</h3>
+          <div className="flex-between" style={{ alignItems: 'flex-start' }}>
+            <h3>{module.task.title}</h3>
+            {saveStatus && <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', opacity: 0.8 }}>{saveStatus}</span>}
+          </div>
           <p>{module.task.instruction}</p>
           
           {isCompleted && (
@@ -210,8 +233,9 @@ export default function Course() {
         animate={{ x: 0, opacity: 1 }}
       >
         <Simulator 
-          initialCode={module.task.initialCode} 
+          initialCode={savedCode[currentModuleId] !== undefined ? savedCode[currentModuleId] : module.task.initialCode} 
           onValidate={handleValidate}
+          onCodeChange={handleCodeChange}
         />
       </motion.div>
     </div>

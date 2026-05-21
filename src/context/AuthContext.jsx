@@ -40,7 +40,8 @@ export function AuthProvider({ children }) {
           createdAt: serverTimestamp(),
           unlockedModules: [1],
           completedChallenges: [],
-          quizScore: null
+          quizScore: null,
+          savedCode: {}
         };
         await setDoc(userDocRef, initialProgress);
         setUserRole(isTeacher ? 'teacher' : 'student');
@@ -58,14 +59,15 @@ export function AuthProvider({ children }) {
           await setDoc(userDocRef, { role: 'teacher' }, { merge: true });
           setUserRole('teacher');
         } else {
-          setUserRole(userData.role);
+          setUserRole(userData.role || 'student');
         }
 
         // Sync loaded progress to store — Firestore is the single source of truth
         useStore.getState().setProgress({
           unlockedModules: userData.unlockedModules || [1],
           completedChallenges: userData.completedChallenges || [],
-          quizScore: userData.quizScore !== undefined ? userData.quizScore : null
+          quizScore: userData.quizScore !== undefined ? userData.quizScore : null,
+          savedCode: userData.savedCode || {}
         });
       }
 

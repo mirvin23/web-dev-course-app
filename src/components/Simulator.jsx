@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import './Simulator.css';
 
-export default function Simulator({ initialCode, onValidate }) {
+export default function Simulator({ initialCode, onValidate, onCodeChange }) {
   const [code, setCode] = useState(initialCode);
   const [success, setSuccess] = useState(false);
 
@@ -14,6 +14,9 @@ export default function Simulator({ initialCode, onValidate }) {
   const handleCodeChange = (value) => {
     const newCode = value || "";
     setCode(newCode);
+    if (onCodeChange) {
+      onCodeChange(newCode);
+    }
     
     if (onValidate) {
       const isValid = onValidate(newCode);

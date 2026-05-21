@@ -42,6 +42,7 @@ const useStore = create(
       unlockedModules: [1],
       completedChallenges: [],
       quizScore: null,
+      savedCode: {},
       
       // Course modules from Firestore
       modules: [],
@@ -56,6 +57,7 @@ const useStore = create(
         unlockedModules: progress.unlockedModules || [1],
         completedChallenges: progress.completedChallenges || [],
         quizScore: progress.quizScore !== undefined ? progress.quizScore : null,
+        savedCode: progress.savedCode || {},
       }),
 
       unlockModule: (moduleId) => {
@@ -80,17 +82,26 @@ const useStore = create(
         set({ quizScore: score });
         syncToFirestore({ quizScore: score });
       },
+
+      saveCode: (moduleId, code) => {
+        const currentSavedCode = get().savedCode || {};
+        const updatedSavedCode = { ...currentSavedCode, [moduleId]: code };
+        set({ savedCode: updatedSavedCode });
+        syncToFirestore({ savedCode: updatedSavedCode });
+      },
       
       resetProgress: () => {
         set({
           unlockedModules: [1],
           completedChallenges: [],
-          quizScore: null
+          quizScore: null,
+          savedCode: {}
         });
         syncToFirestore({
           unlockedModules: [1],
           completedChallenges: [],
-          quizScore: null
+          quizScore: null,
+          savedCode: {}
         });
       },
 
@@ -99,7 +110,8 @@ const useStore = create(
         set({
           unlockedModules: [1],
           completedChallenges: [],
-          quizScore: null
+          quizScore: null,
+          savedCode: {}
         });
       },
 
