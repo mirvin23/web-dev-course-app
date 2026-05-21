@@ -170,6 +170,7 @@ export default function Dashboard() {
     setFormData({
       id: modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1,
       category: 'HTML',
+      section: 'Contenidos Básicos',
       title: '',
       description: '',
       theory: '',
@@ -190,6 +191,7 @@ export default function Dashboard() {
     setFormData({
       id: mod.id,
       category: mod.category || 'HTML',
+      section: mod.section || 'Contenidos Básicos',
       title: mod.title,
       description: mod.description,
       theory: mod.theory,
@@ -352,8 +354,8 @@ export default function Dashboard() {
       
       setFormError('Reordenando...');
       const batch = writeBatch(db);
-      batch.set(doc(db, "modules", "module_" + current.id), { id: prev.id }, { merge: true });
-      batch.set(doc(db, "modules", "module_" + prev.id), { id: tempId }, { merge: true });
+      batch.set(doc(db, "modules", current.docId), { id: prev.id }, { merge: true });
+      batch.set(doc(db, "modules", prev.docId), { id: tempId }, { merge: true });
       await batch.commit();
       
       await fetchModules();
@@ -365,8 +367,8 @@ export default function Dashboard() {
       
       setFormError('Reordenando...');
       const batch = writeBatch(db);
-      batch.set(doc(db, "modules", "module_" + current.id), { id: next.id }, { merge: true });
-      batch.set(doc(db, "modules", "module_" + next.id), { id: tempId }, { merge: true });
+      batch.set(doc(db, "modules", current.docId), { id: next.id }, { merge: true });
+      batch.set(doc(db, "modules", next.docId), { id: tempId }, { merge: true });
       await batch.commit();
       
       await fetchModules();
@@ -803,7 +805,7 @@ export default function Dashboard() {
               )}
 
               <form onSubmit={handleSubmit} className="crud-form">
-                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
                   <div className="input-group">
                     <label>ID</label>
                     <input 
@@ -813,6 +815,16 @@ export default function Dashboard() {
                       required
                       min="1"
                     />
+                  </div>
+                  <div className="input-group">
+                    <label>Sección</label>
+                    <select
+                      value={formData.section}
+                      onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                    >
+                      <option value="Contenidos Básicos">Contenidos Básicos</option>
+                      <option value="Proyecto STEAM">Proyecto STEAM</option>
+                    </select>
                   </div>
                   <div className="input-group">
                     <label>Categoría</label>
