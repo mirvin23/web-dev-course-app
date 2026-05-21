@@ -99,12 +99,11 @@ export default function Dashboard() {
     });
 
     // 2. Query students list
-    const qStudents = query(collection(db, 'users'), where('role', '==', 'student'));
+    const qStudents = query(collection(db, 'users'));
     const unsubscribeStudents = onSnapshot(qStudents, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const data = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(user => user.role !== 'teacher');
       setStudents(data);
     });
 
@@ -316,13 +315,14 @@ export default function Dashboard() {
         
         // Clean up the misnamed documents from previous attempt
         try {
+          const batch2 = writeBatch(db);
           const refOld1 = doc(db, "modules", "1");
-          batch.delete(refOld1);
+          batch2.delete(refOld1);
           newModules.forEach((mod) => {
             const refOld = doc(db, "modules", mod.id.toString());
-            batch.delete(refOld);
+            batch2.delete(refOld);
           });
-          await batch.commit();
+          await batch2.commit();
         } catch(e) {} // ignore if they don't exist
 
         setFormError('');
