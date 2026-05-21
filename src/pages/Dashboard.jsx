@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
-import { module1Update } from '../data/newSyllabus';
+
 import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import './Dashboard.css';
 
@@ -306,13 +306,20 @@ export default function Dashboard() {
         
         // 1. Restaurar los 15 originales desde src/data/modules.js (INTACTOS)
         const { courseModules } = await import('../data/modules.js');
+        const { steamModules } = await import('../data/newSyllabus.js');
+        const module1Update = steamModules[0]; // Extraer el de alta fidelidad
+
         courseModules.forEach((mod) => {
           const ref = doc(db, "modules", "module_" + mod.id);
-          batch.set(ref, mod, { merge: true });
+          // Ojo: Si quieres actualizar la teoría del Módulo 1, lo cruzamos aquí:
+          if (mod.id === 1) {
+             batch.set(ref, { ...mod, ...module1Update, task: mod.task }, { merge: true });
+          } else {
+             batch.set(ref, mod, { merge: true });
+          }
         });
         
         // 2. Inyectar los 30 STEAM Modules del Markdown (IDs 16 al 45)
-        const { steamModules } = await import('../data/newSyllabus.js');
         steamModules.forEach((mod, index) => {
           const newId = 16 + index; // 16 to 45
           const newMod = { ...mod, id: newId, title: mod.title + " (Práctica STEAM)" };
