@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
-import { module1Update, newModules } from '../data/newSyllabus';
+import { module1Update } from '../data/newSyllabus';
 import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import './Dashboard.css';
 
