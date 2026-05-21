@@ -326,12 +326,14 @@ export default function Dashboard() {
         } catch(e) {} // ignore if they don't exist
 
         setFormError('');
-        alert('¡Contenido importado y actualizado con éxito!');
         
         // Refresh local state 
-        fetchModules();
+        await fetchModules();
+        const currentCount = useStore.getState().modules.length;
+        alert(`¡Contenido importado y actualizado con éxito! Se cargaron ${currentCount} módulos en total.`);
       } catch (e) {
         console.error(e);
+        alert('Ocurrió un error al importar: ' + e.message);
         setFormError('Error importando contenido: ' + e.message);
       }
     }
